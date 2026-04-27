@@ -1,0 +1,642 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Maison Analyst — AI Garment Intelligence</title>
+  <link rel="preconnect" href="https://fonts.googleapis.com">
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+  <link href="https://fonts.googleapis.com/css2?family=Cormorant+Garamond:ital,wght@0,300;0,400;0,500;1,300;1,400&family=DM+Mono:wght@300;400&display=swap" rel="stylesheet">
+  <style>
+    *, *::before, *::after { box-sizing: border-box; margin: 0; padding: 0; }
+
+    :root {
+      --cream: #FAF8F4;
+      --ink: #1A1916;
+      --ink-muted: #6B6860;
+      --ink-faint: #A8A69E;
+      --border: rgba(26,25,22,0.12);
+      --border-strong: rgba(26,25,22,0.25);
+      --purple: #534AB7;
+      --purple-light: #EEEDFE;
+      --purple-mid: #AFA9EC;
+      --success: #1D6B4A;
+      --success-bg: #E1F5EE;
+      --warn: #8C5A08;
+      --warn-bg: #FEF3DC;
+      --danger: #9A2B2B;
+      --danger-bg: #FCEAEA;
+    }
+
+    html { font-size: 16px; }
+
+    body {
+      background: var(--cream);
+      color: var(--ink);
+      font-family: 'Cormorant Garamond', serif;
+      min-height: 100vh;
+      display: flex;
+      flex-direction: column;
+      align-items: center;
+    }
+
+    /* ── NAV ── */
+    nav {
+      width: 100%;
+      padding: 1.5rem 2rem;
+      display: flex;
+      align-items: center;
+      justify-content: space-between;
+      border-bottom: 0.5px solid var(--border);
+    }
+
+    .nav-logo {
+      font-size: 18px;
+      font-weight: 300;
+      font-style: italic;
+      letter-spacing: 0.15em;
+      text-transform: uppercase;
+    }
+
+    .nav-tag {
+      font-family: 'DM Mono', monospace;
+      font-size: 10px;
+      letter-spacing: 0.15em;
+      color: var(--ink-muted);
+    }
+
+    /* ── MAIN ── */
+    main {
+      width: 100%;
+      max-width: 720px;
+      padding: 3rem 2rem 4rem;
+      flex: 1;
+    }
+
+    /* ── HERO ── */
+    .hero {
+      text-align: center;
+      margin-bottom: 3rem;
+    }
+
+    .hero h1 {
+      font-size: clamp(32px, 5vw, 52px);
+      font-weight: 300;
+      font-style: italic;
+      line-height: 1.15;
+      letter-spacing: 0.02em;
+      margin-bottom: 0.75rem;
+    }
+
+    .hero p {
+      font-family: 'DM Mono', monospace;
+      font-size: 12px;
+      letter-spacing: 0.1em;
+      color: var(--ink-muted);
+    }
+
+    /* ── UPLOAD ZONE ── */
+    .upload-zone {
+      border: 0.5px dashed var(--border-strong);
+      border-radius: 16px;
+      padding: 3.5rem 2rem;
+      text-align: center;
+      cursor: pointer;
+      transition: background 0.2s, border-color 0.2s;
+      background: white;
+      position: relative;
+    }
+
+    .upload-zone:hover { background: #FDFCFA; border-color: var(--purple); }
+    .upload-zone.drag-over { background: var(--purple-light); border-color: var(--purple); }
+
+    .upload-icon {
+      width: 52px;
+      height: 52px;
+      margin: 0 auto 1.25rem;
+      color: var(--ink-faint);
+    }
+
+    .upload-zone h2 {
+      font-size: 22px;
+      font-weight: 300;
+      font-style: italic;
+      margin-bottom: 0.5rem;
+    }
+
+    .upload-zone p {
+      font-family: 'DM Mono', monospace;
+      font-size: 11px;
+      letter-spacing: 0.1em;
+      color: var(--ink-muted);
+    }
+
+    #file-input { display: none; }
+
+    /* ── PREVIEW ── */
+    .preview-wrap {
+      display: none;
+      margin-top: 2rem;
+      gap: 1.25rem;
+      flex-direction: column;
+    }
+
+    .preview-wrap.visible { display: flex; }
+
+    .image-preview-box {
+      border: 0.5px solid var(--border);
+      border-radius: 12px;
+      overflow: hidden;
+      background: white;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      max-height: 380px;
+    }
+
+    .image-preview-box img {
+      max-width: 100%;
+      max-height: 380px;
+      object-fit: contain;
+      display: block;
+    }
+
+    .btn-primary {
+      font-family: 'DM Mono', monospace;
+      font-size: 11px;
+      letter-spacing: 0.18em;
+      text-transform: uppercase;
+      padding: 14px 32px;
+      background: var(--ink);
+      color: var(--cream);
+      border: none;
+      border-radius: 8px;
+      cursor: pointer;
+      transition: opacity 0.2s;
+      width: 100%;
+    }
+
+    .btn-primary:hover { opacity: 0.85; }
+    .btn-primary:disabled { opacity: 0.35; cursor: not-allowed; }
+
+    .btn-secondary {
+      font-family: 'DM Mono', monospace;
+      font-size: 11px;
+      letter-spacing: 0.12em;
+      text-transform: uppercase;
+      padding: 10px 24px;
+      background: transparent;
+      color: var(--ink-muted);
+      border: 0.5px solid var(--border);
+      border-radius: 8px;
+      cursor: pointer;
+      width: 100%;
+      transition: border-color 0.2s;
+    }
+
+    .btn-secondary:hover { border-color: var(--border-strong); color: var(--ink); }
+
+    /* ── LOADING ── */
+    .loading {
+      display: none;
+      text-align: center;
+      padding: 3rem;
+    }
+
+    .loading.visible { display: block; }
+
+    .spinner {
+      width: 28px;
+      height: 28px;
+      border: 1px solid var(--border);
+      border-top-color: var(--purple);
+      border-radius: 50%;
+      animation: spin 0.9s linear infinite;
+      margin: 0 auto 1.25rem;
+    }
+
+    @keyframes spin { to { transform: rotate(360deg); } }
+
+    .loading p {
+      font-family: 'DM Mono', monospace;
+      font-size: 12px;
+      letter-spacing: 0.08em;
+      color: var(--ink-muted);
+      font-style: italic;
+    }
+
+    /* ── ERROR ── */
+    .error-bar {
+      display: none;
+      margin-top: 1.25rem;
+      padding: 0.875rem 1rem;
+      background: var(--danger-bg);
+      border: 0.5px solid rgba(154,43,43,0.2);
+      border-radius: 8px;
+      font-family: 'DM Mono', monospace;
+      font-size: 11px;
+      color: var(--danger);
+      letter-spacing: 0.05em;
+    }
+
+    .error-bar.visible { display: block; }
+
+    /* ── RESULTS ── */
+    .results {
+      display: none;
+      margin-top: 2.5rem;
+      animation: rise 0.4s ease both;
+    }
+
+    .results.visible { display: block; }
+
+    @keyframes rise { from { opacity: 0; transform: translateY(12px); } to { opacity: 1; transform: translateY(0); } }
+
+    .result-title-row {
+      display: flex;
+      align-items: flex-start;
+      justify-content: space-between;
+      gap: 1rem;
+      margin-bottom: 2rem;
+      padding-bottom: 1.25rem;
+      border-bottom: 0.5px solid var(--border);
+    }
+
+    .result-title-row h2 {
+      font-size: 28px;
+      font-weight: 300;
+      font-style: italic;
+      line-height: 1.2;
+    }
+
+    .conf-badge {
+      font-family: 'DM Mono', monospace;
+      font-size: 10px;
+      letter-spacing: 0.1em;
+      padding: 5px 12px;
+      border-radius: 20px;
+      white-space: nowrap;
+      flex-shrink: 0;
+      margin-top: 4px;
+    }
+
+    .conf-high { background: var(--success-bg); color: var(--success); }
+    .conf-medium { background: var(--warn-bg); color: var(--warn); }
+    .conf-low { background: #F1EFE8; color: var(--ink-muted); }
+
+    /* SECTION BLOCKS */
+    .block {
+      margin-bottom: 1.25rem;
+      padding: 1rem 1.25rem;
+      background: white;
+      border-radius: 10px;
+      border: 0.5px solid var(--border);
+      border-left: 2px solid var(--purple-mid);
+    }
+
+    .block-label {
+      font-family: 'DM Mono', monospace;
+      font-size: 9px;
+      letter-spacing: 0.22em;
+      text-transform: uppercase;
+      color: var(--purple);
+      margin-bottom: 6px;
+    }
+
+    .block-content {
+      font-size: 15px;
+      font-weight: 300;
+      line-height: 1.65;
+      color: var(--ink);
+    }
+
+    .block-content strong { font-weight: 500; font-style: italic; }
+
+    .block-sub {
+      font-family: 'DM Mono', monospace;
+      font-size: 11px;
+      color: var(--ink-muted);
+      margin-top: 4px;
+      line-height: 1.5;
+    }
+
+    /* GRID STAT CARDS */
+    .grid-2 { display: grid; grid-template-columns: 1fr 1fr; gap: 1rem; margin-bottom: 1.25rem; }
+    .grid-3 { display: grid; grid-template-columns: 1fr 1fr 1fr; gap: 1rem; margin-bottom: 1.25rem; }
+
+    @media (max-width: 500px) {
+      .grid-3 { grid-template-columns: 1fr 1fr; }
+    }
+
+    .stat-card {
+      background: white;
+      border: 0.5px solid var(--border);
+      border-radius: 10px;
+      padding: 0.875rem 1rem;
+    }
+
+    .stat-label {
+      font-family: 'DM Mono', monospace;
+      font-size: 9px;
+      letter-spacing: 0.2em;
+      text-transform: uppercase;
+      color: var(--ink-faint);
+      margin-bottom: 5px;
+    }
+
+    .stat-value {
+      font-size: 14px;
+      font-weight: 400;
+      color: var(--ink);
+      line-height: 1.4;
+    }
+
+    /* TAGS */
+    .tag-row {
+      display: flex;
+      flex-wrap: wrap;
+      gap: 6px;
+      margin-top: 0.25rem;
+    }
+
+    .tag {
+      font-family: 'DM Mono', monospace;
+      font-size: 10px;
+      letter-spacing: 0.08em;
+      padding: 4px 12px;
+      border: 0.5px solid var(--border-strong);
+      border-radius: 20px;
+      color: var(--ink-muted);
+      background: white;
+    }
+
+    /* RETAIL HIGHLIGHT */
+    .retail-value {
+      font-size: 22px;
+      font-weight: 300;
+      font-style: italic;
+      color: var(--ink);
+    }
+
+    /* FOOTER */
+    .disclaimer {
+      font-family: 'DM Mono', monospace;
+      font-size: 10px;
+      text-align: center;
+      color: var(--ink-faint);
+      margin-top: 2rem;
+      letter-spacing: 0.06em;
+      line-height: 1.7;
+    }
+
+    /* DIVIDER */
+    .section-divider {
+      border: none;
+      border-top: 0.5px solid var(--border);
+      margin: 2rem 0;
+    }
+
+    footer {
+      width: 100%;
+      border-top: 0.5px solid var(--border);
+      padding: 1.25rem 2rem;
+      text-align: center;
+      font-family: 'DM Mono', monospace;
+      font-size: 10px;
+      letter-spacing: 0.1em;
+      color: var(--ink-faint);
+    }
+  </style>
+</head>
+<body>
+
+<nav>
+  <span class="nav-logo">Maison Analyst</span>
+  <span class="nav-tag">Garment Intelligence</span>
+</nav>
+
+<main>
+  <div class="hero">
+    <h1>Read the garment,<br>know the house.</h1>
+    <p>Upload any clothing image — AI identifies designer, fabric, cut & dimensions</p>
+  </div>
+
+  <!-- UPLOAD -->
+  <div class="upload-zone" id="drop-zone">
+    <svg class="upload-icon" viewBox="0 0 52 52" fill="none" xmlns="http://www.w3.org/2000/svg">
+      <path d="M26 6L26 36" stroke="currentColor" stroke-width="1.2" stroke-linecap="round"/>
+      <path d="M16 16L26 6L36 16" stroke="currentColor" stroke-width="1.2" stroke-linecap="round" stroke-linejoin="round"/>
+      <path d="M10 38V44C10 45.1 10.9 46 12 46H40C41.1 46 42 45.1 42 44V38" stroke="currentColor" stroke-width="1.2" stroke-linecap="round"/>
+    </svg>
+    <h2>Drop a garment image</h2>
+    <p>or click to browse &nbsp;·&nbsp; JPG, PNG, WEBP supported</p>
+    <input type="file" id="file-input" accept="image/*">
+  </div>
+
+  <!-- PREVIEW -->
+  <div class="preview-wrap" id="preview-wrap">
+    <div class="image-preview-box">
+      <img id="img-preview" src="" alt="Garment preview">
+    </div>
+    <button class="btn-primary" id="analyse-btn">Analyse garment →</button>
+    <button class="btn-secondary" id="reset-btn">Choose a different image</button>
+  </div>
+
+  <div class="error-bar" id="error-bar"></div>
+
+  <!-- LOADING -->
+  <div class="loading" id="loading">
+    <div class="spinner"></div>
+    <p>Consulting the atelier…</p>
+  </div>
+
+  <!-- RESULTS -->
+  <div class="results" id="results"></div>
+</main>
+
+<footer>Powered by Claude AI &nbsp;·&nbsp; Analysis is indicative — verify with original labels</footer>
+
+<script>
+  const dropZone   = document.getElementById('drop-zone');
+  const fileInput  = document.getElementById('file-input');
+  const previewWrap = document.getElementById('preview-wrap');
+  const imgPreview = document.getElementById('img-preview');
+  const analyseBtn = document.getElementById('analyse-btn');
+  const resetBtn   = document.getElementById('reset-btn');
+  const loading    = document.getElementById('loading');
+  const results    = document.getElementById('results');
+  const errorBar   = document.getElementById('error-bar');
+
+  let b64 = null, mime = null;
+
+  dropZone.addEventListener('click', () => fileInput.click());
+  dropZone.addEventListener('dragover', e => { e.preventDefault(); dropZone.classList.add('drag-over'); });
+  dropZone.addEventListener('dragleave', () => dropZone.classList.remove('drag-over'));
+  dropZone.addEventListener('drop', e => {
+    e.preventDefault(); dropZone.classList.remove('drag-over');
+    const f = e.dataTransfer.files[0];
+    if (f && f.type.startsWith('image/')) loadFile(f);
+  });
+  fileInput.addEventListener('change', e => { if (e.target.files[0]) loadFile(e.target.files[0]); });
+
+  function loadFile(file) {
+    mime = file.type;
+    const reader = new FileReader();
+    reader.onload = e => {
+      b64 = e.target.result.split(',')[1];
+      imgPreview.src = e.target.result;
+      dropZone.style.display = 'none';
+      previewWrap.classList.add('visible');
+      results.classList.remove('visible');
+      results.innerHTML = '';
+      errorBar.classList.remove('visible');
+    };
+    reader.readAsDataURL(file);
+  }
+
+  resetBtn.addEventListener('click', () => {
+    b64 = null; fileInput.value = '';
+    previewWrap.classList.remove('visible');
+    results.classList.remove('visible');
+    results.innerHTML = '';
+    errorBar.classList.remove('visible');
+    dropZone.style.display = '';
+  });
+
+  analyseBtn.addEventListener('click', async () => {
+    if (!b64) return;
+    analyseBtn.disabled = true;
+    previewWrap.classList.remove('visible');
+    loading.classList.add('visible');
+    errorBar.classList.remove('visible');
+    results.classList.remove('visible');
+    results.innerHTML = '';
+
+    try {
+      const res = await fetch('/api/analyse', {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({ base64: b64, mimeType: mime })
+      });
+      const d = await res.json();
+      if (!res.ok) throw new Error(d.error || 'Analysis failed');
+      render(d);
+    } catch (err) {
+      errorBar.textContent = err.message || 'Analysis failed — please try a clearer image.';
+      errorBar.classList.add('visible');
+      previewWrap.classList.add('visible');
+    } finally {
+      loading.classList.remove('visible');
+      analyseBtn.disabled = false;
+    }
+  });
+
+  function confClass(c) {
+    if (!c) return 'conf-low';
+    const l = c.toLowerCase();
+    if (l.includes('high')) return 'conf-high';
+    if (l.includes('med')) return 'conf-medium';
+    return 'conf-low';
+  }
+
+  function tags(arr) {
+    if (!arr || !arr.length) return '';
+    return '<div class="tag-row">' + arr.map(t => `<span class="tag">${t}</span>`).join('') + '</div>';
+  }
+
+  function render(d) {
+    results.innerHTML = `
+      <div class="result-title-row">
+        <h2>${d.garment_type || 'Garment'}</h2>
+        <span class="conf-badge ${confClass(d.designer_confidence)}">${d.designer_confidence || '—'} confidence</span>
+      </div>
+
+      <div class="block">
+        <div class="block-label">Designer / House</div>
+        <div class="block-content"><strong>${d.designer || 'Unknown'}</strong>${d.collection && d.collection !== 'Unknown' ? ' &nbsp;—&nbsp; ' + d.collection : ''}</div>
+        <div class="block-sub">${d.designer_notes || ''}</div>
+      </div>
+
+      <div class="grid-2">
+        <div class="stat-card">
+          <div class="stat-label">Primary Material</div>
+          <div class="stat-value">${d.material_primary || '—'}</div>
+        </div>
+        <div class="stat-card">
+          <div class="stat-label">Lining / Secondary</div>
+          <div class="stat-value">${d.material_secondary || 'Not visible'}</div>
+        </div>
+      </div>
+
+      <div class="block">
+        <div class="block-label">Fabric Details</div>
+        <div class="block-content">${d.fabric_details || '—'}</div>
+      </div>
+
+      <div class="block">
+        <div class="block-label">Cut & Silhouette</div>
+        <div class="block-content">${d.cut || '—'}</div>
+        <div class="block-sub">Silhouette: <strong>${d.silhouette || '—'}</strong> &nbsp;·&nbsp; Fit: <strong>${d.fit_category || '—'}</strong></div>
+      </div>
+
+      <div class="grid-3">
+        <div class="stat-card">
+          <div class="stat-label">Size Range</div>
+          <div class="stat-value">${d.size_range || '—'}</div>
+        </div>
+        <div class="stat-card">
+          <div class="stat-label">Inseam Est.</div>
+          <div class="stat-value">${d.inseam_estimate || 'N/A'}</div>
+        </div>
+        <div class="stat-card">
+          <div class="stat-label">Rise Est.</div>
+          <div class="stat-value">${d.rise_estimate || 'N/A'}</div>
+        </div>
+      </div>
+
+      <div class="block">
+        <div class="block-label">Construction</div>
+        <div class="block-content">${d.construction || '—'}</div>
+      </div>
+
+      <div class="block">
+        <div class="block-label">Notable Details</div>
+        <div class="block-content">${d.notable_details || '—'}</div>
+      </div>
+
+      <div class="grid-2">
+        <div class="stat-card">
+          <div class="stat-label">Care</div>
+          <div class="stat-value">${d.care || '—'}</div>
+        </div>
+        <div class="stat-card">
+          <div class="stat-label">Est. Retail</div>
+          <div class="stat-value retail-value">${d.estimated_retail || '—'}</div>
+        </div>
+      </div>
+
+      ${d.tags && d.tags.length ? '<div class="stat-card" style="margin-bottom:1.25rem"><div class="stat-label">Style Keywords</div>' + tags(d.tags) + '</div>' : ''}
+
+      <p class="disclaimer">
+        AI-generated analysis — accuracy depends on image quality and visible details.<br>
+        Fabric, designer & dimension estimates are indicative only.
+      </p>
+
+      <hr class="section-divider">
+      <div style="text-align:center;">
+        <button class="btn-secondary" id="new-btn" style="width:auto;padding:10px 28px;">Analyse another garment</button>
+      </div>
+    `;
+
+    results.classList.add('visible');
+    document.getElementById('new-btn').addEventListener('click', () => {
+      b64 = null; fileInput.value = '';
+      results.classList.remove('visible');
+      results.innerHTML = '';
+      dropZone.style.display = '';
+      window.scrollTo({ top: 0, behavior: 'smooth' });
+    });
+  }
+</script>
+</body>
+</html>
