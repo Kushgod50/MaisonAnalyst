@@ -1,0 +1,620 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Maison Analyst — AI Garment Intelligence</title>
+  <link rel="preconnect" href="https://fonts.googleapis.com">
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+  <link href="https://fonts.googleapis.com/css2?family=Cormorant+Garamond:ital,wght@0,300;0,400;0,500;1,300;1,400&family=DM+Mono:wght@300;400&display=swap" rel="stylesheet">
+  <style>
+    *, *::before, *::after { box-sizing: border-box; margin: 0; padding: 0; }
+
+    :root {
+      --cream: #FAF8F4;
+      --ink: #1A1916;
+      --ink-muted: #6B6860;
+      --ink-faint: #A8A69E;
+      --border: rgba(26,25,22,0.12);
+      --border-strong: rgba(26,25,22,0.25);
+      --purple: #534AB7;
+      --purple-light: #EEEDFE;
+      --purple-mid: #AFA9EC;
+      --success: #1D6B4A;
+      --success-bg: #E1F5EE;
+      --warn: #8C5A08;
+      --warn-bg: #FEF3DC;
+      --danger: #9A2B2B;
+      --danger-bg: #FCEAEA;
+      --white: #ffffff;
+    }
+
+    html { font-size: 16px; scroll-behavior: smooth; }
+
+    body {
+      background: var(--cream);
+      color: var(--ink);
+      font-family: 'Cormorant Garamond', serif;
+      min-height: 100vh;
+      display: flex;
+      flex-direction: column;
+      align-items: center;
+    }
+
+    nav {
+      width: 100%;
+      padding: 1.25rem 2rem;
+      display: flex;
+      align-items: center;
+      justify-content: space-between;
+      border-bottom: 0.5px solid var(--border);
+      background: var(--cream);
+      position: sticky;
+      top: 0;
+      z-index: 10;
+    }
+
+    .nav-logo {
+      font-size: 17px;
+      font-weight: 300;
+      font-style: italic;
+      letter-spacing: 0.18em;
+      text-transform: uppercase;
+      color: var(--ink);
+      text-decoration: none;
+    }
+
+    .nav-tag {
+      font-family: 'DM Mono', monospace;
+      font-size: 10px;
+      letter-spacing: 0.12em;
+      color: var(--ink-faint);
+    }
+
+    main {
+      width: 100%;
+      max-width: 680px;
+      padding: 3rem 1.5rem 5rem;
+      flex: 1;
+    }
+
+    .hero {
+      text-align: center;
+      margin-bottom: 2.5rem;
+    }
+
+    .hero h1 {
+      font-size: clamp(30px, 5vw, 48px);
+      font-weight: 300;
+      font-style: italic;
+      line-height: 1.2;
+      letter-spacing: 0.01em;
+      margin-bottom: 0.75rem;
+      color: var(--ink);
+    }
+
+    .hero p {
+      font-family: 'DM Mono', monospace;
+      font-size: 11px;
+      letter-spacing: 0.1em;
+      color: var(--ink-muted);
+      line-height: 1.7;
+    }
+
+    /* Upload zone */
+    .upload-zone {
+      border: 0.5px dashed var(--border-strong);
+      border-radius: 14px;
+      padding: 3rem 2rem;
+      text-align: center;
+      cursor: pointer;
+      transition: background 0.15s, border-color 0.15s;
+      background: var(--white);
+      user-select: none;
+    }
+
+    .upload-zone:hover { background: #FDFCFA; border-color: var(--purple); }
+    .upload-zone.drag-over { background: var(--purple-light); border-color: var(--purple); }
+
+    .upload-icon {
+      width: 44px;
+      height: 44px;
+      margin: 0 auto 1rem;
+      color: var(--ink-faint);
+      display: block;
+    }
+
+    .upload-zone h2 {
+      font-size: 20px;
+      font-weight: 300;
+      font-style: italic;
+      margin-bottom: 0.4rem;
+      color: var(--ink);
+    }
+
+    .upload-zone p {
+      font-family: 'DM Mono', monospace;
+      font-size: 10px;
+      letter-spacing: 0.1em;
+      color: var(--ink-muted);
+    }
+
+    #file-input { display: none; }
+
+    /* Preview */
+    .preview-wrap { display: none; margin-top: 1.5rem; }
+    .preview-wrap.show { display: block; }
+
+    .image-frame {
+      border: 0.5px solid var(--border);
+      border-radius: 10px;
+      overflow: hidden;
+      background: var(--white);
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      margin-bottom: 1rem;
+      max-height: 360px;
+    }
+
+    .image-frame img {
+      max-width: 100%;
+      max-height: 360px;
+      object-fit: contain;
+      display: block;
+    }
+
+    .btn-stack { display: flex; flex-direction: column; gap: 8px; }
+
+    .btn-primary {
+      display: block;
+      width: 100%;
+      font-family: 'DM Mono', monospace;
+      font-size: 11px;
+      letter-spacing: 0.18em;
+      text-transform: uppercase;
+      padding: 14px;
+      background: var(--ink);
+      color: var(--cream);
+      border: none;
+      border-radius: 8px;
+      cursor: pointer;
+      transition: opacity 0.15s;
+    }
+    .btn-primary:hover { opacity: 0.82; }
+    .btn-primary:disabled { opacity: 0.35; cursor: not-allowed; }
+
+    .btn-ghost {
+      display: block;
+      width: 100%;
+      font-family: 'DM Mono', monospace;
+      font-size: 10px;
+      letter-spacing: 0.12em;
+      text-transform: uppercase;
+      padding: 11px;
+      background: transparent;
+      color: var(--ink-muted);
+      border: 0.5px solid var(--border);
+      border-radius: 8px;
+      cursor: pointer;
+      transition: border-color 0.15s, color 0.15s;
+    }
+    .btn-ghost:hover { border-color: var(--border-strong); color: var(--ink); }
+
+    /* Loading */
+    .loading { display: none; text-align: center; padding: 3rem 1rem; }
+    .loading.show { display: block; }
+
+    .spinner {
+      width: 26px; height: 26px;
+      border: 1px solid var(--border);
+      border-top-color: var(--purple);
+      border-radius: 50%;
+      animation: spin 0.85s linear infinite;
+      margin: 0 auto 1rem;
+    }
+    @keyframes spin { to { transform: rotate(360deg); } }
+
+    .loading p {
+      font-family: 'DM Mono', monospace;
+      font-size: 11px;
+      letter-spacing: 0.08em;
+      color: var(--ink-muted);
+      font-style: italic;
+    }
+
+    /* Error */
+    .error-bar { display: none; }
+    .error-bar.show {
+      display: block;
+      margin-top: 1rem;
+      padding: 0.875rem 1rem;
+      background: var(--danger-bg);
+      border: 0.5px solid rgba(154,43,43,0.2);
+      border-radius: 8px;
+      font-family: 'DM Mono', monospace;
+      font-size: 11px;
+      color: var(--danger);
+      letter-spacing: 0.04em;
+      line-height: 1.6;
+    }
+
+    /* Results */
+    .results { display: none; margin-top: 2rem; }
+    .results.show { display: block; animation: rise 0.35s ease both; }
+    @keyframes rise { from { opacity: 0; transform: translateY(10px); } to { opacity: 1; transform: translateY(0); } }
+
+    .result-header {
+      display: flex;
+      align-items: flex-start;
+      justify-content: space-between;
+      gap: 1rem;
+      padding-bottom: 1.25rem;
+      margin-bottom: 1.5rem;
+      border-bottom: 0.5px solid var(--border);
+    }
+
+    .result-header h2 {
+      font-size: 26px;
+      font-weight: 300;
+      font-style: italic;
+      line-height: 1.2;
+    }
+
+    .badge {
+      font-family: 'DM Mono', monospace;
+      font-size: 9px;
+      letter-spacing: 0.12em;
+      padding: 5px 11px;
+      border-radius: 20px;
+      white-space: nowrap;
+      flex-shrink: 0;
+      margin-top: 5px;
+    }
+    .badge-high   { background: var(--success-bg); color: var(--success); }
+    .badge-medium { background: var(--warn-bg);    color: var(--warn); }
+    .badge-low    { background: #F1EFE8;            color: var(--ink-muted); }
+
+    /* Info blocks */
+    .block {
+      background: var(--white);
+      border: 0.5px solid var(--border);
+      border-left: 2px solid var(--purple-mid);
+      border-radius: 10px;
+      padding: 1rem 1.25rem;
+      margin-bottom: 1rem;
+    }
+    .block-label {
+      font-family: 'DM Mono', monospace;
+      font-size: 9px;
+      letter-spacing: 0.22em;
+      text-transform: uppercase;
+      color: var(--purple);
+      margin-bottom: 5px;
+    }
+    .block-body {
+      font-size: 15px;
+      font-weight: 300;
+      line-height: 1.65;
+    }
+    .block-body strong { font-weight: 500; font-style: italic; }
+    .block-sub {
+      font-family: 'DM Mono', monospace;
+      font-size: 11px;
+      color: var(--ink-muted);
+      margin-top: 5px;
+      line-height: 1.6;
+    }
+
+    /* Stat grids */
+    .g2 { display: grid; grid-template-columns: 1fr 1fr; gap: 0.875rem; margin-bottom: 1rem; }
+    .g3 { display: grid; grid-template-columns: 1fr 1fr 1fr; gap: 0.875rem; margin-bottom: 1rem; }
+    @media (max-width: 440px) { .g3 { grid-template-columns: 1fr 1fr; } }
+
+    .scard {
+      background: var(--white);
+      border: 0.5px solid var(--border);
+      border-radius: 10px;
+      padding: 0.875rem 1rem;
+    }
+    .scard-label {
+      font-family: 'DM Mono', monospace;
+      font-size: 9px;
+      letter-spacing: 0.2em;
+      text-transform: uppercase;
+      color: var(--ink-faint);
+      margin-bottom: 4px;
+    }
+    .scard-value { font-size: 14px; line-height: 1.4; }
+    .scard-value.big { font-size: 20px; font-style: italic; font-weight: 300; }
+
+    /* Tags */
+    .tag-wrap { display: flex; flex-wrap: wrap; gap: 6px; padding-top: 4px; }
+    .tag {
+      font-family: 'DM Mono', monospace;
+      font-size: 10px;
+      letter-spacing: 0.07em;
+      padding: 4px 11px;
+      border: 0.5px solid var(--border-strong);
+      border-radius: 20px;
+      color: var(--ink-muted);
+    }
+
+    .divider { border: none; border-top: 0.5px solid var(--border); margin: 1.75rem 0; }
+
+    .disclaimer {
+      font-family: 'DM Mono', monospace;
+      font-size: 10px;
+      text-align: center;
+      color: var(--ink-faint);
+      letter-spacing: 0.05em;
+      line-height: 1.8;
+      margin-bottom: 1.5rem;
+    }
+
+    .center { text-align: center; }
+
+    footer {
+      width: 100%;
+      border-top: 0.5px solid var(--border);
+      padding: 1.25rem 2rem;
+      text-align: center;
+      font-family: 'DM Mono', monospace;
+      font-size: 10px;
+      letter-spacing: 0.1em;
+      color: var(--ink-faint);
+    }
+  </style>
+</head>
+<body>
+
+<nav>
+  <span class="nav-logo">Maison Analyst</span>
+  <span class="nav-tag">Garment Intelligence</span>
+</nav>
+
+<main>
+  <div class="hero">
+    <h1>Read the garment,<br>know the house.</h1>
+    <p>Upload any clothing photo — AI identifies designer, fabric,<br>cut, construction &amp; estimated dimensions.</p>
+  </div>
+
+  <!-- Upload -->
+  <div class="upload-zone" id="drop-zone">
+    <svg class="upload-icon" viewBox="0 0 44 44" fill="none" xmlns="http://www.w3.org/2000/svg">
+      <path d="M22 5v26" stroke="currentColor" stroke-width="1.1" stroke-linecap="round"/>
+      <path d="M13 14l9-9 9 9" stroke="currentColor" stroke-width="1.1" stroke-linecap="round" stroke-linejoin="round"/>
+      <path d="M8 33v5a1 1 0 001 1h26a1 1 0 001-1v-5" stroke="currentColor" stroke-width="1.1" stroke-linecap="round"/>
+    </svg>
+    <h2>Drop a garment image</h2>
+    <p>or click to browse &nbsp;·&nbsp; JPG · PNG · WEBP</p>
+    <input type="file" id="file-input" accept="image/jpeg,image/png,image/webp,image/gif">
+  </div>
+
+  <!-- Preview -->
+  <div class="preview-wrap" id="preview-wrap">
+    <div class="image-frame">
+      <img id="img-preview" src="" alt="Garment preview">
+    </div>
+    <div class="btn-stack">
+      <button class="btn-primary" id="analyse-btn">Analyse garment →</button>
+      <button class="btn-ghost" id="reset-btn">Choose a different image</button>
+    </div>
+  </div>
+
+  <div class="error-bar" id="error-bar"></div>
+
+  <!-- Loading -->
+  <div class="loading" id="loading">
+    <div class="spinner"></div>
+    <p>Consulting the atelier…</p>
+  </div>
+
+  <!-- Results -->
+  <div class="results" id="results"></div>
+</main>
+
+<footer>Powered by Claude AI &nbsp;·&nbsp; Analysis is indicative — always verify with original care labels</footer>
+
+<script>
+(function () {
+  var dropZone   = document.getElementById('drop-zone');
+  var fileInput  = document.getElementById('file-input');
+  var previewWrap= document.getElementById('preview-wrap');
+  var imgPreview = document.getElementById('img-preview');
+  var analyseBtn = document.getElementById('analyse-btn');
+  var resetBtn   = document.getElementById('reset-btn');
+  var loading    = document.getElementById('loading');
+  var results    = document.getElementById('results');
+  var errorBar   = document.getElementById('error-bar');
+
+  var b64  = null;
+  var mime = null;
+
+  /* ---------- drag & drop ---------- */
+  dropZone.addEventListener('click', function () { fileInput.click(); });
+
+  dropZone.addEventListener('dragover', function (e) {
+    e.preventDefault();
+    dropZone.classList.add('drag-over');
+  });
+
+  dropZone.addEventListener('dragleave', function () {
+    dropZone.classList.remove('drag-over');
+  });
+
+  dropZone.addEventListener('drop', function (e) {
+    e.preventDefault();
+    dropZone.classList.remove('drag-over');
+    var f = e.dataTransfer.files[0];
+    if (f && f.type.startsWith('image/')) loadFile(f);
+  });
+
+  fileInput.addEventListener('change', function (e) {
+    if (e.target.files[0]) loadFile(e.target.files[0]);
+  });
+
+  /* ---------- load file ---------- */
+  function loadFile(file) {
+    mime = file.type || 'image/jpeg';
+    var reader = new FileReader();
+    reader.onload = function (e) {
+      b64 = e.target.result.split(',')[1];
+      imgPreview.src = e.target.result;
+      dropZone.style.display = 'none';
+      show(previewWrap);
+      hide(results);
+      results.innerHTML = '';
+      hide(errorBar);
+    };
+    reader.readAsDataURL(file);
+  }
+
+  /* ---------- reset ---------- */
+  resetBtn.addEventListener('click', function () {
+    b64 = null;
+    fileInput.value = '';
+    hide(previewWrap);
+    hide(results);
+    hide(errorBar);
+    results.innerHTML = '';
+    dropZone.style.display = '';
+  });
+
+  /* ---------- analyse ---------- */
+  analyseBtn.addEventListener('click', function () {
+    if (!b64) return;
+    analyseBtn.disabled = true;
+    hide(previewWrap);
+    show(loading);
+    hide(errorBar);
+    hide(results);
+    results.innerHTML = '';
+
+    fetch('/api/analyse', {
+      method: 'POST',
+      headers: { 'Content-Type': 'application/json' },
+      body: JSON.stringify({ base64: b64, mimeType: mime })
+    })
+    .then(function (res) { return res.json().then(function (d) { return { ok: res.ok, d: d }; }); })
+    .then(function (r) {
+      if (!r.ok) throw new Error(r.d.error || 'Analysis failed');
+      render(r.d);
+    })
+    .catch(function (err) {
+      errorBar.textContent = err.message || 'Analysis failed — please try a clearer image.';
+      show(errorBar);
+      show(previewWrap);
+    })
+    .finally(function () {
+      hide(loading);
+      analyseBtn.disabled = false;
+    });
+  });
+
+  /* ---------- helpers ---------- */
+  function show(el) { el.classList.add('show'); }
+  function hide(el) { el.classList.remove('show'); }
+
+  function badgeClass(c) {
+    if (!c) return 'badge-low';
+    var l = c.toLowerCase();
+    if (l.indexOf('high') !== -1) return 'badge-high';
+    if (l.indexOf('med')  !== -1) return 'badge-medium';
+    return 'badge-low';
+  }
+
+  function esc(s) {
+    return String(s || '—')
+      .replace(/&/g, '&amp;')
+      .replace(/</g, '&lt;')
+      .replace(/>/g, '&gt;')
+      .replace(/"/g, '&quot;');
+  }
+
+  function makeTags(arr) {
+    if (!arr || !arr.length) return '';
+    return '<div class="tag-wrap">' +
+      arr.map(function (t) { return '<span class="tag">' + esc(t) + '</span>'; }).join('') +
+      '</div>';
+  }
+
+  /* ---------- render ---------- */
+  function render(d) {
+    var collection = (d.collection && d.collection !== 'Unknown') ? ' &nbsp;—&nbsp; ' + esc(d.collection) : '';
+    var html = '\
+      <div class="result-header">\
+        <h2>' + esc(d.garment_type) + '</h2>\
+        <span class="badge ' + badgeClass(d.designer_confidence) + '">' + esc(d.designer_confidence) + ' confidence</span>\
+      </div>\
+\
+      <div class="block">\
+        <div class="block-label">Designer / House</div>\
+        <div class="block-body"><strong>' + esc(d.designer) + '</strong>' + collection + '</div>\
+        <div class="block-sub">' + esc(d.designer_notes) + '</div>\
+      </div>\
+\
+      <div class="g2">\
+        <div class="scard"><div class="scard-label">Primary material</div><div class="scard-value">' + esc(d.material_primary) + '</div></div>\
+        <div class="scard"><div class="scard-label">Lining / secondary</div><div class="scard-value">' + esc(d.material_secondary) + '</div></div>\
+      </div>\
+\
+      <div class="block">\
+        <div class="block-label">Fabric details</div>\
+        <div class="block-body">' + esc(d.fabric_details) + '</div>\
+      </div>\
+\
+      <div class="block">\
+        <div class="block-label">Cut &amp; silhouette</div>\
+        <div class="block-body">' + esc(d.cut) + '</div>\
+        <div class="block-sub">Silhouette: <strong>' + esc(d.silhouette) + '</strong> &nbsp;·&nbsp; Fit: <strong>' + esc(d.fit_category) + '</strong></div>\
+      </div>\
+\
+      <div class="g3">\
+        <div class="scard"><div class="scard-label">Size range</div><div class="scard-value">' + esc(d.size_range) + '</div></div>\
+        <div class="scard"><div class="scard-label">Inseam est.</div><div class="scard-value">' + esc(d.inseam_estimate) + '</div></div>\
+        <div class="scard"><div class="scard-label">Rise est.</div><div class="scard-value">' + esc(d.rise_estimate) + '</div></div>\
+      </div>\
+\
+      <div class="block">\
+        <div class="block-label">Construction</div>\
+        <div class="block-body">' + esc(d.construction) + '</div>\
+      </div>\
+\
+      <div class="block">\
+        <div class="block-label">Notable details</div>\
+        <div class="block-body">' + esc(d.notable_details) + '</div>\
+      </div>\
+\
+      <div class="g2">\
+        <div class="scard"><div class="scard-label">Care</div><div class="scard-value">' + esc(d.care) + '</div></div>\
+        <div class="scard"><div class="scard-label">Est. retail</div><div class="scard-value big">' + esc(d.estimated_retail) + '</div></div>\
+      </div>\
+';
+
+    if (d.tags && d.tags.length) {
+      html += '<div class="scard" style="margin-bottom:1rem"><div class="scard-label">Style keywords</div>' + makeTags(d.tags) + '</div>';
+    }
+
+    html += '\
+      <p class="disclaimer">AI-generated analysis — accuracy depends on image quality &amp; visible details.<br>Fabric, designer &amp; dimension estimates are indicative only.</p>\
+      <hr class="divider">\
+      <div class="center"><button class="btn-ghost" id="new-btn" style="width:auto;padding:10px 28px;">Analyse another garment</button></div>\
+    ';
+
+    results.innerHTML = html;
+    show(results);
+
+    document.getElementById('new-btn').addEventListener('click', function () {
+      b64 = null;
+      fileInput.value = '';
+      hide(results);
+      results.innerHTML = '';
+      dropZone.style.display = '';
+      window.scrollTo({ top: 0, behavior: 'smooth' });
+    });
+  }
+})();
+</script>
+</body>
+</html>
