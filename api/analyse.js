@@ -1,4 +1,4 @@
-export const config = { maxDuration: 90 };
+export const config = { maxDuration: 120 };
 
 export default async function handler(req, res) {
   res.setHeader('Access-Control-Allow-Origin', '*');
@@ -8,54 +8,52 @@ export default async function handler(req, res) {
   if (req.method !== 'POST') return res.status(405).json({ error: 'Method not allowed' });
 
   const apiKey = process.env.ANTHROPIC_API_KEY;
-  if (!apiKey) return res.status(500).json({ error: 'ANTHROPIC_API_KEY not set on server.' });
+  if (!apiKey) return res.status(500).json({ error: 'ANTHROPIC_API_KEY not set.' });
 
   const { base64, mimeType, focusItem } = req.body || {};
   if (!base64 || !mimeType) return res.status(400).json({ error: 'Missing base64 or mimeType.' });
 
   const focusInstruction = focusItem
-    ? `The user specifically wants to focus on: "${focusItem}". Prioritise that item above all others but still list everything visible.`
-    : 'Identify every clothing item and accessory visible, head to toe. Be exhaustive.';
+    ? `The user wants to focus on: "${focusItem}". Prioritise that item but still list everything visible.`
+    : 'Identify every clothing item and accessory head to toe. Be exhaustive.';
 
-  // ── PHASE 1: Vision — read every clue like a forensic sneaker/fashion expert ──
-  const visionSystem = `You are the world's foremost sneaker authenticator and fashion forensics expert. You have:
-- 20+ years authenticating sneakers and streetwear for Christie's, Sotheby's, GOAT, and StockX
-- encyclopedic knowledge of every Nike, Adidas, Jordan, New Balance, Salomon, BAPE, Off-White, Supreme, Fear of God, Amiri, Chrome Hearts, Dior, Gucci, Balenciaga, Prada, Saint Laurent, Celine, Rick Owens, and 500+ other brand collaborations
-- deep knowledge of Virgil Abloh's entire body of work — every Off-White collab, every Nike "The Ten" shoe, BAPE collabs, MCA Chicago pieces, posthumous releases
-- ability to read branding text, collab signatures, construction details, and limited edition markers from photos
+  // ── PHASE 1: Vision — forensic identification ──
+  const visionSystem = `You are the world's foremost sneaker authenticator and fashion forensics expert with 20+ years authenticating for Christie's, Sotheby's, GOAT, and StockX. You have encyclopedic knowledge of every brand, collab, limited edition, and designer piece ever made.
 
 YOUR RULES:
-1. NEVER say "custom" or "aftermarket" unless you have strong evidence it wasn't produced officially. Many things that look custom ARE official collabs.
-2. READ ALL TEXT visible in the image — brand names, city names, dates, quotation marks, labels, hang tags, stamps. These are your most important clues.
-3. Quoted text on clothing/shoes (e.g. "SHOELACES", "AIR", "LACES") is a signature Virgil Abloh / Off-White design language — identify it as such immediately.
-4. A shooting star / lightning bolt star logo = BAPE Bapesta. Always.
-5. Crocodile or exotic-embossed leather on a cupsole sneaker = premium material collab.
-6. Cross-reference ALL visual clues together to reach the most specific possible identification.
-7. If you see collab indicators from multiple brands on one item, it IS a collaboration — name both brands.
-8. Be DECISIVE and SPECIFIC. Say "BAPE x Off-White Bapesta" not "possibly a custom sneaker."
-9. Include the historical/cultural context of the item — who designed it, when, why it matters.
-10. Your search query must be the most specific possible to find THIS exact item.
+1. Read ALL visible text — brand names, city names, dates, quotes. These are your most important clues.
+2. Quoted labels like "SHOELACES" or "AIR" = Virgil Abloh / Off-White. Identify immediately.
+3. Shooting star/lightning bolt logo = BAPE Bapesta. Always.
+4. NEVER say "custom" unless you have strong evidence it was not produced officially.
+5. If you see collab indicators from multiple brands on one item, name BOTH brands.
+6. Be DECISIVE. Say "BAPE x Off-White Bapesta" not "possibly custom sneaker."
+7. Include cultural context — who designed it, when, why it matters.
+8. For every item generate 3 distinct search queries from different angles to cross-reference.
+9. Assign a confidence score 0-100 for each item based on how clearly you can identify it.
 
-Return ONLY valid JSON. No markdown, no text outside the JSON.
-
+Return ONLY valid JSON. No markdown, no text outside JSON.
 {
   "subject": {
-    "description": "Detailed description of the person/setting — build, pose, setting, what is and isn't visible",
-    "style_summary": "Overall aesthetic and cultural context — what world does this outfit belong to?"
+    "description": "Detailed description of person/setting",
+    "style_summary": "Overall aesthetic and cultural world this outfit belongs to",
+    "style_tags": ["tag1","tag2","tag3"]
   },
   "items": [
     {
       "id": 1,
-      "position": "head / outerwear / top / bottom / footwear / bag / belt / jewelry / glasses / watch / socks / other",
-      "item_type": "Most specific possible item name — e.g. BAPE x Off-White Bapesta Low, NOT just sneaker",
-      "color": "Exact colorway with material description",
-      "material_guess": "Precise material — e.g. crocodile-embossed full-grain leather upper, vulcanized rubber cupsole",
-      "brand_guess": "Full collab credit if applicable — e.g. A Bathing Ape (BAPE) x Off-White by Virgil Abloh",
-      "brand_confidence": "High / Medium / Low",
-      "brand_clues": "Every visual clue read forensically — text visible, logos, star shape, midsole profile, lace jewel, colorway, label text, dates, city names",
-      "style_name_guess": "Most specific product name with collab name and colorway — e.g. BAPE x Off-White Bapesta Low Black Croc",
-      "cultural_context": "Why this item matters — designer history, collab backstory, rarity, cultural significance",
-      "search_query": "Hyper-specific search query — e.g. BAPE Off-White Virgil Abloh Bapesta black crocodile shoelaces collab price"
+      "position": "head/outerwear/top/bottom/footwear/bag/belt/jewelry/glasses/watch/socks/other",
+      "item_type": "Most specific possible name e.g. BAPE x Off-White Bapesta Low",
+      "color": "Exact colorway with material",
+      "material_guess": "Precise material description",
+      "brand_guess": "Full brand/collab credit",
+      "brand_confidence": "High/Medium/Low",
+      "vision_confidence": 92,
+      "brand_clues": "Every visual clue read forensically",
+      "style_name_guess": "Most specific product name with collab and colorway",
+      "cultural_context": "Why this item matters — designer history, collab backstory, rarity",
+      "search_query_1": "First angle: brand + exact model + colorway + retail price",
+      "search_query_2": "Second angle: SKU code OR alternative style name OR collab name",
+      "search_query_3": "Third angle: resale market query e.g. StockX GOAT lowest ask"
     }
   ]
 }`;
@@ -64,65 +62,99 @@ Return ONLY valid JSON. No markdown, no text outside the JSON.
   try {
     const raw1 = await callClaude(apiKey, visionSystem, [
       { type: 'image', source: { type: 'base64', media_type: mimeType, data: base64 } },
-      { type: 'text', text: focusInstruction + ' Read every piece of text, every logo, every design detail forensically. Be decisive and specific. Return only the JSON object.' }
+      { type: 'text', text: focusInstruction + ' Read every text, logo, and detail forensically. Return only the JSON object.' }
     ]);
     phase1 = safeParseJSON(raw1);
-    if (!phase1 || !phase1.items) throw new Error('Response parsed but missing items array. Raw start: ' + raw1.slice(0, 300));
+    if (!phase1 || !phase1.items) throw new Error('Vision parse failed. Raw: ' + raw1.slice(0, 300));
   } catch (err) {
     return res.status(500).json({ error: 'Vision analysis failed: ' + err.message });
   }
 
-  // ── PHASE 2: Deep web search — find the exact item and cheapest real price ──
+  // ── PHASE 2: Triple cross-reference per item in parallel ──
   const enriched = [];
+
   for (const item of (phase1.items || [])) {
     try {
-      const searchSystem = `You are a sneaker and luxury fashion market researcher with access to real-time web search. 
+      const [r1, r2, r3] = await Promise.allSettled([
+        searchItem(apiKey, item.search_query_1 || item.brand_guess + ' ' + item.item_type + ' retail price'),
+        searchItem(apiKey, item.search_query_2 || item.style_name_guess + ' buy cheapest'),
+        searchItem(apiKey, item.search_query_3 || item.item_type + ' StockX GOAT lowest ask')
+      ]);
 
-Your job: verify the exact item identified and find the cheapest legitimate price available right now.
+      const results = [r1, r2, r3].map(r => r.status === 'fulfilled' ? r.value : 'Search unavailable').filter(Boolean);
 
-Search strategy:
-1. Search the exact collab name + colorway first
-2. Search the style code / SKU if identifiable  
-3. Check StockX, GOAT, Grailed, Vestiaire, then brand sites, then retailers
-4. If it's a rare collab, check auction results too
-5. Note if the item is sold out at retail (meaning resale only) and give the lowest resale ask
+      // Phase 2b: Synthesise all 3 results into one definitive answer
+      const synthSystem = `You are a fashion and sneaker market expert. You have been given 3 independent web search results about the same fashion item. Your job is to cross-reference them, find what they AGREE on, resolve contradictions, and produce one DEFINITIVE identification with the cheapest current price.
 
-For rare collabs by deceased designers (e.g. Virgil Abloh), note the cultural significance and how it affects price.
+Rules:
+- If 2+ sources agree on brand/model → Confirmed
+- If only 1 source identifies it a certain way → Likely  
+- If sources conflict without resolution → Uncertain
+- Always report the SINGLE lowest legitimate price found across all sources
+- Be definitive. No hedging. No "could be".
 
-Return ONLY valid JSON — no markdown, no text outside JSON:
+Return ONLY valid JSON:
 {
-  "brand_verified": "Full verified brand/collab credit",
-  "brand_verification_confidence": "Confirmed / Likely / Uncertain",
-  "style_name": "Official full product name",
-  "style_code": "SKU or style code if found",
-  "cheapest_price": "Lowest current asking price found e.g. $1,200",
-  "cheapest_source": "Platform where that price was found e.g. GOAT / StockX / Grailed",
-  "retail_price": "Original retail price when released",
-  "price_context": "Context e.g. Sold out at retail. Resale only. / In stock at retail. / Limited auction piece.",
-  "fabric_confirmed": "Official materials from product listing",
+  "brand_verified": "Definitive brand — no hedging",
+  "brand_verification_confidence": "Confirmed/Likely/Uncertain",
+  "final_confidence_score": 88,
+  "style_name": "Official definitive product name",
+  "style_code": "SKU or style code if found, else —",
+  "cheapest_price": "Lowest price found e.g. $320 or Unable to retrieve",
+  "cheapest_source": "Platform e.g. GOAT / StockX / Nike.com / Farfetch",
+  "retail_price": "Original retail price",
+  "resale_price": "Current resale ask if applicable",
+  "price_context": "e.g. Sold out at retail, resale only / In stock at retail / Limited release",
+  "fabric_confirmed": "Confirmed materials from listing",
   "colorway_official": "Official colorway name",
-  "release_info": "Release date, quantity, how it was sold (raffle, retail, online drop etc.)"
+  "release_info": "Release date, how sold, quantity if known",
+  "cross_reference_summary": "2 sentences: what all 3 searches confirmed and how you resolved any contradictions"
 }`;
 
-      const prompt = `Find the exact item and cheapest current price:
-Item: ${item.item_type}
-Brand/Collab: ${item.brand_guess}
-Style: ${item.style_name_guess || 'unknown'}
-Color: ${item.color}
-Cultural context: ${item.cultural_context || ''}
-Search query to use: ${item.search_query}
+      const synthPrompt = `Item: ${item.item_type}
+Brand guess: ${item.brand_guess} (${item.brand_confidence} confidence)
+Visual clues: ${item.brand_clues}
+Style guess: ${item.style_name_guess}
 
-Search thoroughly. This may be a rare collab — check StockX, GOAT, Grailed, and auction sites. Return only JSON.`;
+SEARCH 1 (${item.search_query_1}):
+${results[0] || 'No result'}
 
-      const raw2 = await callClaudeWithSearch(apiKey, searchSystem, prompt);
-      const parsed = safeParseJSON(raw2);
-      enriched.push({ ...item, research: parsed || fallbackResearch(item) });
+SEARCH 2 (${item.search_query_2}):
+${results[1] || 'No result'}
+
+SEARCH 3 (${item.search_query_3}):
+${results[2] || 'No result'}
+
+Cross-reference all 3. Give definitive ID and cheapest price. Return only JSON.`;
+
+      const synthRaw = await callClaude(apiKey, synthSystem, [{ type: 'text', text: synthPrompt }]);
+      const synth = safeParseJSON(synthRaw);
+      enriched.push({ ...item, research: synth || fallbackResearch(item) });
     } catch (err) {
       enriched.push({ ...item, research: fallbackResearch(item) });
     }
   }
 
   return res.status(200).json({ subject: phase1.subject, items: enriched });
+}
+
+async function searchItem(apiKey, query) {
+  const r = await fetch('https://api.anthropic.com/v1/messages', {
+    method: 'POST',
+    headers: { 'Content-Type': 'application/json', 'x-api-key': apiKey, 'anthropic-version': '2023-06-01' },
+    body: JSON.stringify({
+      model: 'claude-sonnet-4-5',
+      max_tokens: 800,
+      tools: [{ type: 'web_search_20250305', name: 'web_search' }],
+      messages: [{ role: 'user', content: `Search for: ${query}. Summarise what you find: brand name, exact product name, style code if listed, price, and where to buy. Plain text, concise.` }]
+    })
+  });
+  const text = await r.text();
+  if (!r.ok) return null;
+  try {
+    const data = JSON.parse(text);
+    return (data.content || []).map(b => b.text || '').filter(Boolean).join('').trim().slice(0, 700);
+  } catch (_) { return null; }
 }
 
 async function callClaude(apiKey, system, contentArr) {
@@ -137,55 +169,26 @@ async function callClaude(apiKey, system, contentArr) {
     catch (_) { throw new Error(text.slice(0, 300)); }
   }
   let data;
-  try { data = JSON.parse(text); } catch (_) { throw new Error('Non-JSON from Anthropic: ' + text.slice(0, 200)); }
+  try { data = JSON.parse(text); } catch (_) { throw new Error('Non-JSON from Anthropic'); }
   return (data.content || []).map(b => b.text || '').join('');
-}
-
-async function callClaudeWithSearch(apiKey, system, userText) {
-  const r = await fetch('https://api.anthropic.com/v1/messages', {
-    method: 'POST',
-    headers: { 'Content-Type': 'application/json', 'x-api-key': apiKey, 'anthropic-version': '2023-06-01' },
-    body: JSON.stringify({
-      model: 'claude-sonnet-4-5', max_tokens: 1500, system,
-      tools: [{ type: 'web_search_20250305', name: 'web_search' }],
-      messages: [{ role: 'user', content: userText }]
-    })
-  });
-  const text = await r.text();
-  if (!r.ok) {
-    try { const j = JSON.parse(text); throw new Error(j?.error?.message || text.slice(0, 300)); }
-    catch (_) { throw new Error(text.slice(0, 300)); }
-  }
-  let data;
-  try { data = JSON.parse(text); } catch (_) { throw new Error('Non-JSON from Anthropic: ' + text.slice(0, 200)); }
-  return (data.content || []).map(b => b.text || '').filter(Boolean).join('');
 }
 
 function safeParseJSON(raw) {
   if (!raw || typeof raw !== 'string') return null;
   let cleaned = raw.replace(/```json\s*/gi, '').replace(/```\s*/g, '').trim();
-
-  // 1. Try clean full parse
   const match = cleaned.match(/(\{[\s\S]*\}|\[[\s\S]*\])/);
-  if (match) {
-    try { return JSON.parse(match[0]); } catch (_) {}
-  }
-
-  // 2. Response was truncated — try to recover by closing open structures
+  if (match) { try { return JSON.parse(match[0]); } catch (_) {} }
   try {
     let s = cleaned;
-    // Strip any trailing partial field (e.g. cut off mid-string)
-    const lastComma = Math.max(s.lastIndexOf(',\n    {'), s.lastIndexOf(',\n  {'));
-    if (lastComma > 100) s = s.slice(0, lastComma);
-    // Count open braces/brackets and close them
-    const openBraces = (s.match(/\{/g) || []).length - (s.match(/\}/g) || []).length;
-    const openBrackets = (s.match(/\[/g) || []).length - (s.match(/\]/g) || []).length;
-    for (let i = 0; i < openBraces; i++) s += '}';
-    for (let i = 0; i < openBrackets; i++) s += ']';
-    const recovered = s.match(/(\{[\s\S]*\}|\[[\s\S]*\])/);
-    if (recovered) return JSON.parse(recovered[0]);
+    const lc = Math.max(s.lastIndexOf(',\n    {'), s.lastIndexOf(',\n  {'));
+    if (lc > 100) s = s.slice(0, lc);
+    const ob = (s.match(/\{/g)||[]).length - (s.match(/\}/g)||[]).length;
+    const oa = (s.match(/\[/g)||[]).length - (s.match(/\]/g)||[]).length;
+    for (let i=0;i<ob;i++) s+='}';
+    for (let i=0;i<oa;i++) s+=']';
+    const rec = s.match(/(\{[\s\S]*\}|\[[\s\S]*\])/);
+    if (rec) return JSON.parse(rec[0]);
   } catch (_) {}
-
   return null;
 }
 
@@ -193,14 +196,17 @@ function fallbackResearch(item) {
   return {
     brand_verified: item.brand_guess || 'Unknown',
     brand_verification_confidence: 'Uncertain',
+    final_confidence_score: 40,
     style_name: item.style_name_guess || '—',
     style_code: '—',
     cheapest_price: 'Unable to retrieve',
     cheapest_source: '—',
     retail_price: '—',
+    resale_price: '—',
     price_context: 'Search unavailable',
     fabric_confirmed: item.material_guess || '—',
     colorway_official: item.color || '—',
-    release_info: '—'
+    release_info: '—',
+    cross_reference_summary: 'Cross-reference search unavailable for this item.'
   };
 }
