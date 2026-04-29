@@ -9,5 +9,13 @@
     { "src": "/api/analyse", "dest": "/api/analyse.js" },
     { "src": "/api/chat", "dest": "/api/chat.js" },
     { "src": "/(.*)", "dest": "/index.html" }
-  ]
+  ],
+  "functions": {
+    "api/analyse.js": {
+      "maxDuration": 300
+    },
+    "api/chat.js": {
+      "maxDuration": 30
+    }
+  }
 }

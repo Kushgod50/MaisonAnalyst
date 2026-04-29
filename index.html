@@ -239,13 +239,15 @@
     <div class="scan-corners"></div>
   </div>
   <div class="load-info">
-    <div class="load-title">Analysing Outfit</div>
-    <div class="load-sub">Researching each piece thoroughly</div>
+    <div class="load-title">Deep Analysis Running</div>
+    <div class="load-sub" id="load-sub-text">This takes a few minutes &mdash; we research until we're sure</div>
     <div class="prog-track"><div class="prog-fill" id="prog-fill"></div></div>
     <div class="lsteps">
-      <div class="lstep" id="ls1"><div class="lstep-ico">1</div>Visual analysis &mdash; reading every detail</div>
-      <div class="lstep" id="ls2"><div class="lstep-ico">2</div>Referencing sources for each item</div>
-      <div class="lstep" id="ls3"><div class="lstep-ico">3</div>Confirming prices &amp; availability</div>
+      <div class="lstep" id="ls1"><div class="lstep-ico">1</div>Vision scan &mdash; reading every logo &amp; detail</div>
+      <div class="lstep" id="ls2"><div class="lstep-ico">2</div>Multi-round brand research per item</div>
+      <div class="lstep" id="ls3"><div class="lstep-ico">3</div>Official sites &amp; authorised retailers</div>
+      <div class="lstep" id="ls4"><div class="lstep-ico">4</div>Verifying prices &amp; availability</div>
+      <div class="lstep" id="ls5"><div class="lstep-ico">5</div>Final confidence check</div>
     </div>
   </div>
 </div>
@@ -304,8 +306,8 @@
   function goTo(id){[sU,sL,sR].forEach(function(s){s.classList.remove('active')});document.getElementById(id).classList.add('active')}
   function startProgress(){
     progFill.style.width='0%';
-    var stops=[5,15,30,48,63,75,86,93],i=0;
-    progTimer=setInterval(function(){if(i<stops.length)progFill.style.width=stops[i++]+'%';},5500);
+    var stops=[3,8,14,20,28,36,44,52,59,65,71,76,81,86,90,93,96],i=0;
+    progTimer=setInterval(function(){if(i<stops.length)progFill.style.width=stops[i++]+'%';},8000);
   }
   function endProgress(cb){clearInterval(progTimer);progFill.style.width='100%';setTimeout(cb,450)}
   function startSteps(){
@@ -316,7 +318,7 @@
       if(i<=3){var p=document.getElementById('ls'+(i-1));p.classList.remove('active');p.classList.add('done');p.querySelector('.lstep-ico').textContent='\u2713';document.getElementById('ls'+i).classList.add('active');i++;}
     },9000);
   }
-  function stopSteps(){clearInterval(stepTimer);stepTimer=null;['ls1','ls2','ls3'].forEach(function(id){var e=document.getElementById(id);e.classList.remove('active');e.classList.add('done');e.querySelector('.lstep-ico').textContent='\u2713'})}
+  function stopSteps(){clearInterval(stepTimer);stepTimer=null;['ls1','ls2','ls3','ls4','ls5'].forEach(function(id){var e=document.getElementById(id);if(!e)return;e.classList.remove('active');e.classList.add('done');e.querySelector('.lstep-ico').textContent='\u2713'})}
 
   dz.addEventListener('click',function(){fi.click()});
   dz.addEventListener('dragover',function(e){e.preventDefault();dz.classList.add('drag')});
