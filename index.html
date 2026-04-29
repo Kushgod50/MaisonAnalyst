@@ -222,6 +222,13 @@
     .chat-btn:hover{opacity:.85}
     .chat-btn:disabled{opacity:.3;cursor:not-allowed}
 
+    .pb-avail{font-family:'JetBrains Mono',monospace;font-size:9px;letter-spacing:.1em;text-transform:uppercase;margin-top:4px;padding:3px 8px;border-radius:20px;display:inline-block}
+    .avail-stock{background:var(--greenbg);color:var(--green);border:1px solid rgba(0,232,122,.18)}
+    .avail-sold{background:var(--redbg);color:var(--red);border:1px solid rgba(255,58,58,.18)}
+    .avail-limited{background:var(--amberbg);color:var(--amber);border:1px solid rgba(245,166,35,.18)}
+    .buy-link{display:inline-block;font-family:'JetBrains Mono',monospace;font-size:10px;letter-spacing:.1em;text-transform:uppercase;color:#000;background:var(--lime);padding:7px 14px;border-radius:7px;text-decoration:none;font-weight:700;transition:opacity .15s;margin-bottom:6px}
+    .buy-link:hover{opacity:.85}
+
     .disc{font-family:'JetBrains Mono',monospace;font-size:9px;text-align:center;color:var(--txf);line-height:1.9;padding:.875rem 1.5rem;border-top:1px solid var(--br);letter-spacing:.04em}
 
     @media(max-width:820px){
@@ -502,7 +509,7 @@
   function sumPrices(items){
     var t=0,any=false;
     items.forEach(function(it){
-      var p=((it.research&&(it.research.cheapest_price||it.research.retail_price))||'').replace(/,/g,'');
+      var p=((it.research&&(it.research.retail_price||it.research.resale_price))||'').replace(/,/g,'');
       var n=p.match(/\d+/g);
       if(n){var v=parseInt(n[0],10);if(!isNaN(v)&&v>0){t+=v;any=true;}}
     });
@@ -562,8 +569,8 @@
       var conf=r.brand_verification_confidence||'Uncertain';
       var score=r.final_confidence_score||item.vision_confidence||70;
       var col=ringColor(score);
-      var cheap=r.cheapest_price&&!r.cheapest_price.toLowerCase().includes('unable')?r.cheapest_price:null;
-      var src2=r.cheapest_source&&r.cheapest_source!=='—'?r.cheapest_source:'';
+      var cheap=r.retail_price&&!r.retail_price.toLowerCase().includes('unable')?r.retail_price:(r.resale_price&&r.resale_price!=='—'&&r.resale_price!=='N/A'?r.resale_price:null);
+      var src2=r.retail_source&&r.retail_source!=='—'?r.retail_source:(r.resale_source&&r.resale_source!=='—'?r.resale_source:'');
 
       html+='<div class="irow" id="irow'+idx+'" onclick="DC.toggle('+idx+')">';
 
@@ -584,15 +591,35 @@
       html+='<div class="dbrand-row"><div class="dbrand-name">'+esc(brand)+'</div>';
       html+='<span class="cbadge '+cc(conf)+'"><span class="cbadge-dot"></span>'+esc(conf)+'</span></div>';
 
-      if(cheap){
-        html+='<div class="price-block"><div class="pb-left">';
-        html+='<div class="pb-amount">'+esc(cheap)+'</div>';
-        if(src2)html+='<div class="pb-source">Cheapest — '+esc(src2)+'</div>';
-        if(r.price_context)html+='<div class="pb-ctx">'+esc(r.price_context)+'</div>';
-        html+='</div><div class="pb-right">';
-        if(r.retail_price&&r.retail_price!=='—')html+='<div class="pb-retail">Retail '+esc(r.retail_price)+'</div>';
-        if(r.resale_price&&r.resale_price!=='—'&&r.resale_price!=='N/A')html+='<div class="pb-resale">Resale '+esc(r.resale_price)+'</div>';
-        html+='</div></div>';
+      var retailPrice=r.retail_price&&!r.retail_price.toLowerCase().includes('unable')?r.retail_price:null;
+      var resalePrice=r.resale_price&&r.resale_price!=='—'&&r.resale_price!=='N/A'?r.resale_price:null;
+      var productUrl=r.product_url&&r.product_url!=='—'?r.product_url:null;
+      var retailSrc=r.retail_source&&r.retail_source!=='—'?r.retail_source:'';
+      var avail=r.availability||'';
+
+      if(retailPrice||resalePrice){
+        html+='<div class="price-block">';
+        if(retailPrice){
+          html+='<div class="pb-left">';
+          html+='<div class="pb-amount">'+esc(retailPrice)+'</div>';
+          if(retailSrc)html+='<div class="pb-source">'+esc(retailSrc)+'</div>';
+          if(avail)html+='<div class="pb-avail '+getAvailClass(avail)+'">'+esc(avail)+'</div>';
+          html+='</div>';
+          html+='<div class="pb-right">';
+          if(productUrl)html+='<a class="buy-link" href="'+productUrl+'" target="_blank" rel="noopener">View Product &rarr;</a>';
+          if(resalePrice)html+='<div class="pb-resale">Resale: '+esc(resalePrice)+' ('+esc(r.resale_source||'')+')</div>';
+          html+='</div>';
+        } else if(resalePrice){
+          html+='<div class="pb-left">';
+          html+='<div class="pb-amount" style="color:var(--amber)">'+esc(resalePrice)+'</div>';
+          html+='<div class="pb-source" style="color:var(--amber)">'+esc(r.resale_source||'')+'</div>';
+          html+='<div class="pb-avail avail-sold">Retail Sold Out</div>';
+          html+='</div>';
+          html+='<div class="pb-right">';
+          if(productUrl)html+='<a class="buy-link" href="'+productUrl+'" target="_blank" rel="noopener">View Listing &rarr;</a>';
+          html+='</div>';
+        }
+        html+='</div>';
       }
 
       html+='<div class="dpills">';
@@ -633,6 +660,14 @@
     .then(function(t){var rep='No response.';try{var d=JSON.parse(t);rep=d.reply||d.error||rep;}catch(_){}tb.className='msg ai';tb.textContent=rep;})
     .catch(function(){tb.className='msg ai';tb.textContent='Connection error. Please try again.';})
     .finally(function(){chatBtn.disabled=false;chatFeed.scrollTop=chatFeed.scrollHeight;});
+  }
+
+  /* ── Helpers ── */
+  function getAvailClass(a){
+    var l=(a||'').toLowerCase();
+    if(l.includes('stock'))return 'avail-stock';
+    if(l.includes('sold')||l.includes('resale'))return 'avail-sold';
+    return 'avail-limited';
   }
 
   /* ── Public ── */

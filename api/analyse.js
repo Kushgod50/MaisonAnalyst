@@ -17,43 +17,41 @@ export default async function handler(req, res) {
     ? `The user wants to focus on: "${focusItem}". Prioritise that item but still list everything visible.`
     : 'Identify every clothing item and accessory head to toe. Be exhaustive.';
 
-  // ── PHASE 1: Vision — forensic identification ──
-  const visionSystem = `You are the world's foremost sneaker authenticator and fashion forensics expert with 20+ years authenticating for Christie's, Sotheby's, GOAT, and StockX. You have encyclopedic knowledge of every brand, collab, limited edition, and designer piece ever made.
+  // ── PHASE 1: Vision ──
+  const visionSystem = `You are the world's foremost sneaker authenticator and fashion forensics expert. You have encyclopedic knowledge of every brand, collab, and limited edition piece.
 
-YOUR RULES:
-1. Read ALL visible text — brand names, city names, dates, quotes. These are your most important clues.
-2. Quoted labels like "SHOELACES" or "AIR" = Virgil Abloh / Off-White. Identify immediately.
-3. Shooting star/lightning bolt logo = BAPE Bapesta. Always.
-4. NEVER say "custom" unless you have strong evidence it was not produced officially.
-5. If you see collab indicators from multiple brands on one item, name BOTH brands.
-6. Be DECISIVE. Say "BAPE x Off-White Bapesta" not "possibly custom sneaker."
-7. Include cultural context — who designed it, when, why it matters.
-8. For every item generate 3 distinct search queries from different angles to cross-reference.
-9. Assign a confidence score 0-100 for each item based on how clearly you can identify it.
+RULES:
+1. Read ALL visible text — brand names, dates, quotes. Most important clues.
+2. Quoted labels like "SHOELACES" or "AIR" = Virgil Abloh / Off-White.
+3. Shooting star/lightning bolt logo = BAPE Bapesta.
+4. NEVER say "custom" unless you have strong evidence.
+5. If collab indicators from multiple brands appear, name BOTH.
+6. Be DECISIVE. "BAPE x Off-White Bapesta" not "possibly custom."
+7. Include cultural context.
+8. Generate 3 distinct search queries per item for cross-referencing.
 
-Return ONLY valid JSON. No markdown, no text outside JSON.
+Return ONLY valid JSON, no markdown:
 {
   "subject": {
     "description": "Detailed description of person/setting",
-    "style_summary": "Overall aesthetic and cultural world this outfit belongs to",
-    "style_tags": ["tag1","tag2","tag3"]
+    "style_summary": "Overall aesthetic"
   },
   "items": [
     {
       "id": 1,
       "position": "head/outerwear/top/bottom/footwear/bag/belt/jewelry/glasses/watch/socks/other",
-      "item_type": "Most specific possible name e.g. BAPE x Off-White Bapesta Low",
-      "color": "Exact colorway with material",
-      "material_guess": "Precise material description",
+      "item_type": "Most specific name e.g. BAPE x Off-White Bapesta Low",
+      "color": "Exact colorway",
+      "material_guess": "Precise material",
       "brand_guess": "Full brand/collab credit",
       "brand_confidence": "High/Medium/Low",
-      "vision_confidence": 92,
-      "brand_clues": "Every visual clue read forensically",
-      "style_name_guess": "Most specific product name with collab and colorway",
-      "cultural_context": "Why this item matters — designer history, collab backstory, rarity",
-      "search_query_1": "First angle: brand + exact model + colorway + retail price",
-      "search_query_2": "Second angle: SKU code OR alternative style name OR collab name",
-      "search_query_3": "Third angle: resale market query e.g. StockX GOAT lowest ask"
+      "vision_confidence": 88,
+      "brand_clues": "Every visual clue",
+      "style_name_guess": "Most specific product name",
+      "cultural_context": "Why this item matters",
+      "search_query_1": "brand + exact model + colorway + site:ssense.com OR site:mrporter.com OR site:farfetch.com",
+      "search_query_2": "brand + model + colorway + retail price buy now",
+      "search_query_3": "item name + SKU + price stockx OR goat OR grailed"
     }
   ]
 }`;
@@ -62,74 +60,81 @@ Return ONLY valid JSON. No markdown, no text outside JSON.
   try {
     const raw1 = await callClaude(apiKey, visionSystem, [
       { type: 'image', source: { type: 'base64', media_type: mimeType, data: base64 } },
-      { type: 'text', text: focusInstruction + ' Read every text, logo, and detail forensically. Return only the JSON object.' }
+      { type: 'text', text: focusInstruction + ' Return only the JSON object.' }
     ]);
     phase1 = safeParseJSON(raw1);
-    if (!phase1 || !phase1.items) throw new Error('Vision parse failed. Raw: ' + raw1.slice(0, 300));
+    if (!phase1 || !phase1.items) throw new Error('Vision parse failed: ' + raw1.slice(0, 200));
   } catch (err) {
     return res.status(500).json({ error: 'Vision analysis failed: ' + err.message });
   }
 
-  // ── PHASE 2: Triple cross-reference per item in parallel ──
+  // ── PHASE 2: Per-item — search, fetch product page, extract real price ──
   const enriched = [];
 
   for (const item of (phase1.items || [])) {
     try {
+      // Run 3 searches in parallel
       const [r1, r2, r3] = await Promise.allSettled([
-        searchItem(apiKey, item.search_query_1 || item.brand_guess + ' ' + item.item_type + ' retail price'),
-        searchItem(apiKey, item.search_query_2 || item.style_name_guess + ' buy cheapest'),
-        searchItem(apiKey, item.search_query_3 || item.item_type + ' StockX GOAT lowest ask')
+        searchAndFetchPrice(apiKey, item, 1),
+        searchAndFetchPrice(apiKey, item, 2),
+        searchAndFetchPrice(apiKey, item, 3)
       ]);
 
-      const results = [r1, r2, r3].map(r => r.status === 'fulfilled' ? r.value : 'Search unavailable').filter(Boolean);
+      const results = [r1, r2, r3].map(r => r.status === 'fulfilled' ? r.value : null);
 
-      // Phase 2b: Synthesise all 3 results into one definitive answer
-      const synthSystem = `You are a fashion and sneaker market expert. You have been given 3 independent web search results about the same fashion item. Your job is to cross-reference them, find what they AGREE on, resolve contradictions, and produce one DEFINITIVE identification with the cheapest current price.
+      // Synthesise all 3 into final answer
+      const synthSystem = `You are a fashion pricing expert. You have 3 sets of search results each trying to find the retail price of the same item.
 
-Rules:
-- If 2+ sources agree on brand/model → Confirmed
-- If only 1 source identifies it a certain way → Likely  
-- If sources conflict without resolution → Uncertain
-- Always report the SINGLE lowest legitimate price found across all sources
-- Be definitive. No hedging. No "could be".
+Your job:
+1. Find what all 3 results AGREE on for brand and model name
+2. Extract the ACTUAL RETAIL PRICE — the price the brand or an authorised retailer sells it for NEW
+3. If retail is sold out, find the lowest current ask on resale (StockX, GOAT, Grailed)
+4. Return a direct product URL if one was found
+5. Be DEFINITIVE — no hedging
+
+IMPORTANT: We want the RETAIL price (what it costs brand new from the brand or authorised stores). Only use resale if retail is unavailable.
 
 Return ONLY valid JSON:
 {
-  "brand_verified": "Definitive brand — no hedging",
+  "brand_verified": "Definitive confirmed brand",
   "brand_verification_confidence": "Confirmed/Likely/Uncertain",
   "final_confidence_score": 88,
-  "style_name": "Official definitive product name",
-  "style_code": "SKU or style code if found, else —",
-  "cheapest_price": "Lowest price found e.g. $320 or Unable to retrieve",
-  "cheapest_source": "Platform e.g. GOAT / StockX / Nike.com / Farfetch",
-  "retail_price": "Original retail price",
-  "resale_price": "Current resale ask if applicable",
-  "price_context": "e.g. Sold out at retail, resale only / In stock at retail / Limited release",
-  "fabric_confirmed": "Confirmed materials from listing",
+  "style_name": "Official product name",
+  "style_code": "SKU if found else —",
+  "retail_price": "RETAIL price e.g. $340 — from brand site or authorised retailer. This is the most important field.",
+  "retail_source": "Where the retail price was found e.g. Nike.com / SSENSE / Mr Porter / Farfetch",
+  "product_url": "Direct URL to the product page if found, else —",
+  "resale_price": "Current resale ask from StockX/GOAT/Grailed if retail unavailable, else —",
+  "resale_source": "StockX / GOAT / Grailed etc, else —",
+  "availability": "In Stock / Sold Out at Retail / Resale Only / Limited",
+  "fabric_confirmed": "Official material from product page",
   "colorway_official": "Official colorway name",
-  "release_info": "Release date, how sold, quantity if known",
-  "cross_reference_summary": "2 sentences: what all 3 searches confirmed and how you resolved any contradictions"
+  "release_info": "Release date and details",
+  "cross_reference_summary": "2 sentences: what the 3 searches confirmed and what price was found where"
 }`;
 
-      const synthPrompt = `Item: ${item.item_type}
-Brand guess: ${item.brand_guess} (${item.brand_confidence} confidence)
-Visual clues: ${item.brand_clues}
+      const synthPrompt = `Item being researched:
+Type: ${item.item_type}
+Brand guess: ${item.brand_guess}
 Style guess: ${item.style_name_guess}
+Color: ${item.color}
+Visual clues: ${item.brand_clues}
 
-SEARCH 1 (${item.search_query_1}):
+SEARCH RESULT 1:
 ${results[0] || 'No result'}
 
-SEARCH 2 (${item.search_query_2}):
+SEARCH RESULT 2:
 ${results[1] || 'No result'}
 
-SEARCH 3 (${item.search_query_3}):
+SEARCH RESULT 3:
 ${results[2] || 'No result'}
 
-Cross-reference all 3. Give definitive ID and cheapest price. Return only JSON.`;
+Extract the retail price. Look for dollar amounts on product pages. Return only JSON.`;
 
       const synthRaw = await callClaude(apiKey, synthSystem, [{ type: 'text', text: synthPrompt }]);
       const synth = safeParseJSON(synthRaw);
       enriched.push({ ...item, research: synth || fallbackResearch(item) });
+
     } catch (err) {
       enriched.push({ ...item, research: fallbackResearch(item) });
     }
@@ -138,56 +143,86 @@ Cross-reference all 3. Give definitive ID and cheapest price. Return only JSON.`
   return res.status(200).json({ subject: phase1.subject, items: enriched });
 }
 
-async function searchItem(apiKey, query) {
+// Search for item AND fetch the product page to get real price
+async function searchAndFetchPrice(apiKey, item, queryNum) {
+  const query = item[`search_query_${queryNum}`] || `${item.brand_guess} ${item.item_type} ${item.color} retail price buy`;
+
+  const searchSystem = `You are a fashion price researcher. Search for the item, find a direct product page URL, fetch it, and extract the exact retail price shown on the page.
+
+Steps:
+1. Search for the item using the query
+2. Find the most relevant product listing URL (brand site, SSENSE, Mr Porter, Farfetch, END, Selfridges, Nike.com, etc.)
+3. Fetch that URL to get the actual price from the page
+4. Report: the brand name, product name, price (with currency), URL, and availability status
+
+Be specific about the price — extract the exact dollar/pound/euro amount shown. If you see "$340" or "£280" report it exactly.`;
+
   const r = await fetch('https://api.anthropic.com/v1/messages', {
     method: 'POST',
-    headers: { 'Content-Type': 'application/json', 'x-api-key': apiKey, 'anthropic-version': '2023-06-01' },
+    headers: {
+      'Content-Type': 'application/json',
+      'x-api-key': apiKey,
+      'anthropic-version': '2023-06-01'
+    },
     body: JSON.stringify({
       model: 'claude-sonnet-4-5',
-      max_tokens: 800,
+      max_tokens: 1000,
+      system: searchSystem,
       tools: [{ type: 'web_search_20250305', name: 'web_search' }],
-      messages: [{ role: 'user', content: `Search for: ${query}. Summarise what you find: brand name, exact product name, style code if listed, price, and where to buy. Plain text, concise.` }]
+      messages: [{
+        role: 'user',
+        content: `Search query: ${query}\n\nFind the product page and extract the exact retail price. Report the URL and price.`
+      }]
     })
   });
+
   const text = await r.text();
   if (!r.ok) return null;
+
   try {
     const data = JSON.parse(text);
-    return (data.content || []).map(b => b.text || '').filter(Boolean).join('').trim().slice(0, 700);
+    return (data.content || []).map(b => b.text || '').filter(Boolean).join('').trim().slice(0, 800);
   } catch (_) { return null; }
 }
 
 async function callClaude(apiKey, system, contentArr) {
   const r = await fetch('https://api.anthropic.com/v1/messages', {
     method: 'POST',
-    headers: { 'Content-Type': 'application/json', 'x-api-key': apiKey, 'anthropic-version': '2023-06-01' },
-    body: JSON.stringify({ model: 'claude-sonnet-4-5', max_tokens: 4000, system, messages: [{ role: 'user', content: contentArr }] })
+    headers: {
+      'Content-Type': 'application/json',
+      'x-api-key': apiKey,
+      'anthropic-version': '2023-06-01'
+    },
+    body: JSON.stringify({
+      model: 'claude-sonnet-4-5',
+      max_tokens: 4000,
+      system,
+      messages: [{ role: 'user', content: contentArr }]
+    })
   });
   const text = await r.text();
   if (!r.ok) {
-    try { const j = JSON.parse(text); throw new Error(j?.error?.message || text.slice(0, 300)); }
-    catch (_) { throw new Error(text.slice(0, 300)); }
+    try { const j = JSON.parse(text); throw new Error(j?.error?.message || text.slice(0, 200)); }
+    catch (_) { throw new Error(text.slice(0, 200)); }
   }
-  let data;
-  try { data = JSON.parse(text); } catch (_) { throw new Error('Non-JSON from Anthropic'); }
+  const data = JSON.parse(text);
   return (data.content || []).map(b => b.text || '').join('');
 }
 
 function safeParseJSON(raw) {
-  if (!raw || typeof raw !== 'string') return null;
-  let cleaned = raw.replace(/```json\s*/gi, '').replace(/```\s*/g, '').trim();
-  const match = cleaned.match(/(\{[\s\S]*\}|\[[\s\S]*\])/);
-  if (match) { try { return JSON.parse(match[0]); } catch (_) {} }
+  if (!raw) return null;
+  let s = raw.replace(/```json\s*/gi, '').replace(/```\s*/g, '').trim();
+  const m = s.match(/(\{[\s\S]*\}|\[[\s\S]*\])/);
+  if (m) { try { return JSON.parse(m[0]); } catch (_) {} }
   try {
-    let s = cleaned;
     const lc = Math.max(s.lastIndexOf(',\n    {'), s.lastIndexOf(',\n  {'));
     if (lc > 100) s = s.slice(0, lc);
     const ob = (s.match(/\{/g)||[]).length - (s.match(/\}/g)||[]).length;
     const oa = (s.match(/\[/g)||[]).length - (s.match(/\]/g)||[]).length;
     for (let i=0;i<ob;i++) s+='}';
     for (let i=0;i<oa;i++) s+=']';
-    const rec = s.match(/(\{[\s\S]*\}|\[[\s\S]*\])/);
-    if (rec) return JSON.parse(rec[0]);
+    const r2 = s.match(/(\{[\s\S]*\}|\[[\s\S]*\])/);
+    if (r2) return JSON.parse(r2[0]);
   } catch (_) {}
   return null;
 }
@@ -199,14 +234,15 @@ function fallbackResearch(item) {
     final_confidence_score: 40,
     style_name: item.style_name_guess || '—',
     style_code: '—',
-    cheapest_price: 'Unable to retrieve',
-    cheapest_source: '—',
-    retail_price: '—',
+    retail_price: 'Unable to retrieve',
+    retail_source: '—',
+    product_url: '—',
     resale_price: '—',
-    price_context: 'Search unavailable',
+    resale_source: '—',
+    availability: 'Unknown',
     fabric_confirmed: item.material_guess || '—',
     colorway_official: item.color || '—',
     release_info: '—',
-    cross_reference_summary: 'Cross-reference search unavailable for this item.'
+    cross_reference_summary: 'Search unavailable for this item.'
   };
 }
