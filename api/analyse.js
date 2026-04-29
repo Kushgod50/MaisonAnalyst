@@ -49,7 +49,7 @@ Analyze the garment image and return ONLY a valid JSON object — no markdown fe
         'anthropic-version': '2023-06-01'
       },
       body: JSON.stringify({
-        model: 'claude-sonnet-4-20250514',
+        model: 'claude-sonnet-4-5',
         max_tokens: 1200,
         system: systemPrompt,
         messages: [{
