@@ -1,4 +1,4 @@
-export const config = { maxDuration: 60 };
+export const config = { maxDuration: 90 };
 
 export default async function handler(req, res) {
   res.setHeader('Access-Control-Allow-Origin', '*');
@@ -67,7 +67,7 @@ Return ONLY valid JSON. No markdown, no text outside the JSON.
       { type: 'text', text: focusInstruction + ' Read every piece of text, every logo, every design detail forensically. Be decisive and specific. Return only the JSON object.' }
     ]);
     phase1 = safeParseJSON(raw1);
-    if (!phase1 || !phase1.items) throw new Error('Vision response missing items: ' + raw1.slice(0, 200));
+    if (!phase1 || !phase1.items) throw new Error('Response parsed but missing items array. Raw start: ' + raw1.slice(0, 300));
   } catch (err) {
     return res.status(500).json({ error: 'Vision analysis failed: ' + err.message });
   }
@@ -129,7 +129,7 @@ async function callClaude(apiKey, system, contentArr) {
   const r = await fetch('https://api.anthropic.com/v1/messages', {
     method: 'POST',
     headers: { 'Content-Type': 'application/json', 'x-api-key': apiKey, 'anthropic-version': '2023-06-01' },
-    body: JSON.stringify({ model: 'claude-sonnet-4-5', max_tokens: 2000, system, messages: [{ role: 'user', content: contentArr }] })
+    body: JSON.stringify({ model: 'claude-sonnet-4-5', max_tokens: 4000, system, messages: [{ role: 'user', content: contentArr }] })
   });
   const text = await r.text();
   if (!r.ok) {
@@ -164,9 +164,29 @@ async function callClaudeWithSearch(apiKey, system, userText) {
 function safeParseJSON(raw) {
   if (!raw || typeof raw !== 'string') return null;
   let cleaned = raw.replace(/```json\s*/gi, '').replace(/```\s*/g, '').trim();
+
+  // 1. Try clean full parse
   const match = cleaned.match(/(\{[\s\S]*\}|\[[\s\S]*\])/);
-  if (!match) return null;
-  try { return JSON.parse(match[0]); } catch (_) { return null; }
+  if (match) {
+    try { return JSON.parse(match[0]); } catch (_) {}
+  }
+
+  // 2. Response was truncated — try to recover by closing open structures
+  try {
+    let s = cleaned;
+    // Strip any trailing partial field (e.g. cut off mid-string)
+    const lastComma = Math.max(s.lastIndexOf(',\n    {'), s.lastIndexOf(',\n  {'));
+    if (lastComma > 100) s = s.slice(0, lastComma);
+    // Count open braces/brackets and close them
+    const openBraces = (s.match(/\{/g) || []).length - (s.match(/\}/g) || []).length;
+    const openBrackets = (s.match(/\[/g) || []).length - (s.match(/\]/g) || []).length;
+    for (let i = 0; i < openBraces; i++) s += '}';
+    for (let i = 0; i < openBrackets; i++) s += ']';
+    const recovered = s.match(/(\{[\s\S]*\}|\[[\s\S]*\])/);
+    if (recovered) return JSON.parse(recovered[0]);
+  } catch (_) {}
+
+  return null;
 }
 
 function fallbackResearch(item) {

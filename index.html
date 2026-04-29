@@ -470,14 +470,16 @@
         headers:{'Content-Type':'application/json'},
         body:JSON.stringify({message:msg,context:outfitContext})
       })
-      .then(function(r){return r.json()})
-      .then(function(d){
+      .then(function(r){return r.text()})
+      .then(function(t){
+        var reply='No response — please try again.';
+        try{var d=JSON.parse(t);reply=d.reply||d.error||reply;}catch(_){}
         tb.className='chat-msg assistant';
-        tb.textContent=d.reply||d.error||'No response.';
+        tb.textContent=reply;
       })
       .catch(function(err){
         tb.className='chat-msg assistant';
-        tb.textContent='Error: '+err.message;
+        tb.textContent='Connection error — please try again.';
       })
       .finally(function(){
         sendBtn.disabled=false;

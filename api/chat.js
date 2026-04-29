@@ -13,18 +13,27 @@ export default async function handler(req, res) {
   const { message, context } = req.body || {};
   if (!message) return res.status(400).json({ error: 'Missing message.' });
 
-  const system = `You are Maison, an expert fashion analyst and personal stylist. You have deep knowledge of luxury fashion, streetwear, sneakers, and designer brands.
+  const system = `You are Maison, an expert fashion analyst, sneaker authenticator, and personal stylist with deep knowledge of luxury fashion, streetwear, designer collabs, and resale markets.
 
-The user has uploaded a photo and you have already analysed it. The outfit analysis context is provided below.
+You have already analysed the user's outfit photo. Use that context to answer their question accurately.
 
-Answer the user's question conversationally and helpfully. If they ask about a specific item, go deep — find exact model names, colourways, prices, where to buy. If they ask for alternatives or similar items, suggest specific products with prices. Keep responses concise and useful. Do not use bullet points unless listing multiple items.
+If they ask about a specific item — find the exact model, collab name, colorway, and current cheapest price. Search the web if needed.
+If they ask for alternatives — suggest specific real products with prices.
+If they ask about authenticity or rarity — give expert context.
 
-${context ? 'OUTFIT ANALYSIS CONTEXT:\n' + context : ''}`;
+Keep responses concise, direct, and conversational. No bullet points unless listing multiple items.
+
+${context ? 'OUTFIT ALREADY ANALYSED:\n' + context : 'No outfit context available — answer generally.'}`;
 
   try {
+    // Always read response as text first to avoid JSON parse crashes
     const r = await fetch('https://api.anthropic.com/v1/messages', {
       method: 'POST',
-      headers: { 'Content-Type': 'application/json', 'x-api-key': apiKey, 'anthropic-version': '2023-06-01' },
+      headers: {
+        'Content-Type': 'application/json',
+        'x-api-key': apiKey,
+        'anthropic-version': '2023-06-01'
+      },
       body: JSON.stringify({
         model: 'claude-sonnet-4-5',
         max_tokens: 800,
@@ -34,16 +43,37 @@ ${context ? 'OUTFIT ANALYSIS CONTEXT:\n' + context : ''}`;
       })
     });
 
-    const text = await r.text();
+    const rawText = await r.text();
+
     if (!r.ok) {
-      try { const j = JSON.parse(text); return res.status(r.status).json({ error: j?.error?.message || text.slice(0, 200) }); }
-      catch (_) { return res.status(r.status).json({ error: text.slice(0, 200) }); }
+      // Extract readable error message without trying to JSON parse the whole thing
+      let errMsg = 'Anthropic API error ' + r.status;
+      try {
+        const j = JSON.parse(rawText);
+        errMsg = j?.error?.message || errMsg;
+      } catch (_) {
+        // rawText might be plain text error — just use status
+      }
+      return res.status(200).json({ reply: 'Sorry, I ran into an issue: ' + errMsg });
     }
 
-    const data = JSON.parse(text);
-    const reply = (data.content || []).map(b => b.text || '').filter(Boolean).join('').trim();
-    return res.status(200).json({ reply });
+    let data;
+    try {
+      data = JSON.parse(rawText);
+    } catch (_) {
+      return res.status(200).json({ reply: 'Sorry, I got an unexpected response. Please try again.' });
+    }
+
+    const reply = (data.content || [])
+      .map(b => b.text || '')
+      .filter(Boolean)
+      .join('')
+      .trim();
+
+    return res.status(200).json({ reply: reply || 'No response generated — please try again.' });
+
   } catch (err) {
-    return res.status(500).json({ error: err.message });
+    // Network or other hard failure — return graceful message not a crash
+    return res.status(200).json({ reply: 'Connection error: ' + (err.message || 'unknown error') });
   }
 }
