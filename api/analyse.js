@@ -13,34 +13,49 @@ export default async function handler(req, res) {
   const { base64, mimeType, focusItem } = req.body || {};
   if (!base64 || !mimeType) return res.status(400).json({ error: 'Missing base64 or mimeType.' });
 
-  // ── PHASE 1: Vision ──
   const focusInstruction = focusItem
-    ? `The user specifically wants to focus on: "${focusItem}". Prioritise identifying that item in detail, but still list all other visible items.`
+    ? `The user specifically wants to focus on: "${focusItem}". Prioritise that item above all others but still list everything visible.`
     : 'Identify every clothing item and accessory visible, head to toe. Be exhaustive.';
 
-  const visionSystem = `You are a world-class fashion analyst and sneaker/streetwear expert with 30 years experience at top houses and deep knowledge of Nike, Adidas, Jordan Brand, New Balance, Salomon, Asics, Prada, Gucci, Balenciaga, Rick Owens, Supreme, Fear of God, Amiri, Chrome Hearts, Dior, Saint Laurent, Celine, Loewe, and more.
+  // ── PHASE 1: Vision — read every clue like a forensic sneaker/fashion expert ──
+  const visionSystem = `You are the world's foremost sneaker authenticator and fashion forensics expert. You have:
+- 20+ years authenticating sneakers and streetwear for Christie's, Sotheby's, GOAT, and StockX
+- encyclopedic knowledge of every Nike, Adidas, Jordan, New Balance, Salomon, BAPE, Off-White, Supreme, Fear of God, Amiri, Chrome Hearts, Dior, Gucci, Balenciaga, Prada, Saint Laurent, Celine, Rick Owens, and 500+ other brand collaborations
+- deep knowledge of Virgil Abloh's entire body of work — every Off-White collab, every Nike "The Ten" shoe, BAPE collabs, MCA Chicago pieces, posthumous releases
+- ability to read branding text, collab signatures, construction details, and limited edition markers from photos
 
-For footwear especially: identify the EXACT silhouette, colourway, and model. For Nike — identify whether it is Air Force 1, Dunk, Air Max (which generation), Jordan (which number), Cortez, Pegasus, etc. Describe the exact colourway using official Nike naming conventions where possible (e.g. "Panda", "University Red", "Bred", "Chicago"). Look at the toe box shape, midsole profile, heel tab, swoosh placement and size, outsole pattern, lacing system, and any visible text or branding on the tongue or heel.
+YOUR RULES:
+1. NEVER say "custom" or "aftermarket" unless you have strong evidence it wasn't produced officially. Many things that look custom ARE official collabs.
+2. READ ALL TEXT visible in the image — brand names, city names, dates, quotation marks, labels, hang tags, stamps. These are your most important clues.
+3. Quoted text on clothing/shoes (e.g. "SHOELACES", "AIR", "LACES") is a signature Virgil Abloh / Off-White design language — identify it as such immediately.
+4. A shooting star / lightning bolt star logo = BAPE Bapesta. Always.
+5. Crocodile or exotic-embossed leather on a cupsole sneaker = premium material collab.
+6. Cross-reference ALL visual clues together to reach the most specific possible identification.
+7. If you see collab indicators from multiple brands on one item, it IS a collaboration — name both brands.
+8. Be DECISIVE and SPECIFIC. Say "BAPE x Off-White Bapesta" not "possibly a custom sneaker."
+9. Include the historical/cultural context of the item — who designed it, when, why it matters.
+10. Your search query must be the most specific possible to find THIS exact item.
 
-Return ONLY a valid JSON object. No markdown, no text outside the JSON.
+Return ONLY valid JSON. No markdown, no text outside the JSON.
 
 {
   "subject": {
-    "description": "Detailed description — build, gender presentation, age, pose, setting",
-    "style_summary": "Overall aesthetic in 1-2 sentences"
+    "description": "Detailed description of the person/setting — build, pose, setting, what is and isn't visible",
+    "style_summary": "Overall aesthetic and cultural context — what world does this outfit belong to?"
   },
   "items": [
     {
       "id": 1,
       "position": "head / outerwear / top / bottom / footwear / bag / belt / jewelry / glasses / watch / socks / other",
-      "item_type": "Very specific item name e.g. Nike Dunk Low, not just sneaker",
-      "color": "Exact colorway description",
-      "material_guess": "Materials e.g. tumbled leather upper, rubber cupsole",
-      "brand_guess": "Exact brand — for Nike always specify the sub-line e.g. Nike Sportswear / Jordan Brand / Nike SB",
+      "item_type": "Most specific possible item name — e.g. BAPE x Off-White Bapesta Low, NOT just sneaker",
+      "color": "Exact colorway with material description",
+      "material_guess": "Precise material — e.g. crocodile-embossed full-grain leather upper, vulcanized rubber cupsole",
+      "brand_guess": "Full collab credit if applicable — e.g. A Bathing Ape (BAPE) x Off-White by Virgil Abloh",
       "brand_confidence": "High / Medium / Low",
-      "brand_clues": "Precise visual evidence — swoosh size and angle, toe box shape, midsole height, heel tab style, tongue label colour, sole colour split",
-      "style_name_guess": "Exact model name and colourway e.g. Nike Dunk Low Retro White Black Panda DD1391-100",
-      "search_query": "Specific search query to find cheapest price e.g. Nike Dunk Low Panda DD1391-100 cheapest price buy"
+      "brand_clues": "Every visual clue read forensically — text visible, logos, star shape, midsole profile, lace jewel, colorway, label text, dates, city names",
+      "style_name_guess": "Most specific product name with collab name and colorway — e.g. BAPE x Off-White Bapesta Low Black Croc",
+      "cultural_context": "Why this item matters — designer history, collab backstory, rarity, cultural significance",
+      "search_query": "Hyper-specific search query — e.g. BAPE Off-White Virgil Abloh Bapesta black crocodile shoelaces collab price"
     }
   ]
 }`;
@@ -49,7 +64,7 @@ Return ONLY a valid JSON object. No markdown, no text outside the JSON.
   try {
     const raw1 = await callClaude(apiKey, visionSystem, [
       { type: 'image', source: { type: 'base64', media_type: mimeType, data: base64 } },
-      { type: 'text', text: focusInstruction + ' Return only the JSON object.' }
+      { type: 'text', text: focusInstruction + ' Read every piece of text, every logo, every design detail forensically. Be decisive and specific. Return only the JSON object.' }
     ]);
     phase1 = safeParseJSON(raw1);
     if (!phase1 || !phase1.items) throw new Error('Vision response missing items: ' + raw1.slice(0, 200));
@@ -57,40 +72,47 @@ Return ONLY a valid JSON object. No markdown, no text outside the JSON.
     return res.status(500).json({ error: 'Vision analysis failed: ' + err.message });
   }
 
-  // ── PHASE 2: Deep web search per item for cheapest real price ──
+  // ── PHASE 2: Deep web search — find the exact item and cheapest real price ──
   const enriched = [];
   for (const item of (phase1.items || [])) {
     try {
-      const searchSystem = `You are a fashion and sneaker price researcher. Your ONLY job is to find the cheapest legitimate current price for the described item from reputable sellers.
+      const searchSystem = `You are a sneaker and luxury fashion market researcher with access to real-time web search. 
 
-Reputable sources (in order of preference for cheapest):
-- GOAT, StockX, Kick Avenue (for sneakers/streetwear resale)
-- Nike.com, Adidas.com (official retail)
-- END Clothing, SSENSE, Mr Porter, Farfetch, Selfridges, Browns
-- Nordstrom, ASOS, Zalando for more accessible brands
-- Grailed, Vestiaire Collective for luxury secondhand
+Your job: verify the exact item identified and find the cheapest legitimate price available right now.
 
 Search strategy:
-1. Search the exact style name + colorway + "cheapest price" or "buy now"
-2. Search the style code/SKU if identifiable
-3. Compare at least 2-3 sources
-4. Report the LOWEST legitimate price found, and where it was found
+1. Search the exact collab name + colorway first
+2. Search the style code / SKU if identifiable  
+3. Check StockX, GOAT, Grailed, Vestiaire, then brand sites, then retailers
+4. If it's a rare collab, check auction results too
+5. Note if the item is sold out at retail (meaning resale only) and give the lowest resale ask
 
-Return ONLY a valid JSON object — no markdown, no text outside JSON:
+For rare collabs by deceased designers (e.g. Virgil Abloh), note the cultural significance and how it affects price.
+
+Return ONLY valid JSON — no markdown, no text outside JSON:
 {
-  "brand_verified": "Confirmed exact brand and sub-line",
+  "brand_verified": "Full verified brand/collab credit",
   "brand_verification_confidence": "Confirmed / Likely / Uncertain",
   "style_name": "Official full product name",
-  "style_code": "SKU or style code if found e.g. DD1391-100",
-  "cheapest_price": "Lowest price found e.g. $98",
-  "cheapest_source": "Where that price was found e.g. GOAT",
-  "retail_price": "Original/current retail price if different",
-  "price_context": "Brief note e.g. retail sold out, resale only / in stock at retail / on sale",
-  "fabric_confirmed": "Official materials if found",
-  "colorway_official": "Official colorway name e.g. Panda / University Red / Bred Toe"
+  "style_code": "SKU or style code if found",
+  "cheapest_price": "Lowest current asking price found e.g. $1,200",
+  "cheapest_source": "Platform where that price was found e.g. GOAT / StockX / Grailed",
+  "retail_price": "Original retail price when released",
+  "price_context": "Context e.g. Sold out at retail. Resale only. / In stock at retail. / Limited auction piece.",
+  "fabric_confirmed": "Official materials from product listing",
+  "colorway_official": "Official colorway name",
+  "release_info": "Release date, quantity, how it was sold (raffle, retail, online drop etc.)"
 }`;
 
-      const prompt = `Find the cheapest legitimate price for this item:\nType: ${item.item_type}\nColor: ${item.color}\nBrand: ${item.brand_guess}\nStyle guess: ${item.style_name_guess || 'unknown'}\nSearch query: ${item.search_query}\n\nSearch now. Find the cheapest real price from a reputable seller. Return only JSON.`;
+      const prompt = `Find the exact item and cheapest current price:
+Item: ${item.item_type}
+Brand/Collab: ${item.brand_guess}
+Style: ${item.style_name_guess || 'unknown'}
+Color: ${item.color}
+Cultural context: ${item.cultural_context || ''}
+Search query to use: ${item.search_query}
+
+Search thoroughly. This may be a rare collab — check StockX, GOAT, Grailed, and auction sites. Return only JSON.`;
 
       const raw2 = await callClaudeWithSearch(apiKey, searchSystem, prompt);
       const parsed = safeParseJSON(raw2);
@@ -102,10 +124,6 @@ Return ONLY a valid JSON object — no markdown, no text outside JSON:
 
   return res.status(200).json({ subject: phase1.subject, items: enriched });
 }
-
-// ── Chat endpoint — handles follow-up questions about specific items ──
-// This is handled by the same route but with a `chatMessage` field
-// We re-export a chat handler at /api/chat
 
 async function callClaude(apiKey, system, contentArr) {
   const r = await fetch('https://api.anthropic.com/v1/messages', {
@@ -162,6 +180,7 @@ function fallbackResearch(item) {
     retail_price: '—',
     price_context: 'Search unavailable',
     fabric_confirmed: item.material_guess || '—',
-    colorway_official: item.color || '—'
+    colorway_official: item.color || '—',
+    release_info: '—'
   };
 }

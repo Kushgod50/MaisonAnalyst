@@ -131,6 +131,9 @@
     .detail-pill-value{font-size:13px;font-weight:300;line-height:1.4}
 
     /* CLUES — collapsible */
+    .context-block{background:var(--purple-bg);border-radius:8px;padding:.75rem 1rem;margin-bottom:.75rem;border-left:2px solid var(--purple-mid)}
+    .context-label{font-family:'DM Mono',monospace;font-size:9px;letter-spacing:.2em;text-transform:uppercase;color:var(--purple);margin-bottom:5px}
+    .context-text{font-size:14px;font-weight:300;line-height:1.7;color:var(--ink)}
     .clues-toggle{font-family:'DM Mono',monospace;font-size:10px;letter-spacing:.08em;color:var(--ink-faint);cursor:pointer;background:none;border:none;padding:0;margin-top:.75rem;display:flex;align-items:center;gap:4px}
     .clues-toggle:hover{color:var(--ink)}
     .clues-body{display:none;margin-top:.625rem;font-size:13px;font-weight:300;line-height:1.65;color:var(--ink-muted);border-left:2px solid var(--purple-mid);padding-left:.75rem}
@@ -386,11 +389,16 @@
       // Detail pills
       html+='<div class="detail-row">';
       html+=pill('Official Name',r.style_name);
+      html+=pill('Release Info',r.release_info);
       html+=pill('Style Code',r.style_code);
       html+=pill('Retail Price',r.retail_price);
       html+=pill('Material',r.fabric_confirmed||item.material_guess);
       html+='</div>';
 
+      // Cultural context block
+      if(item.cultural_context&&item.cultural_context!=='—'){
+        html+='<div class="context-block"><div class="context-label">Cultural Context &amp; Significance</div><div class="context-text">'+esc(item.cultural_context)+'</div></div>';
+      }
       // Clues toggle
       if(item.brand_clues&&item.brand_clues!=='—'){
         html+='<button class="clues-toggle" onclick="MA.toggleClues(\''+cluesId+'\',this)">&#9656; Visual ID clues</button>';
