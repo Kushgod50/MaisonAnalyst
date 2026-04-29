@@ -3,7 +3,7 @@
 <head>
   <meta charset="UTF-8">
   <meta name="viewport" content="width=device-width, initial-scale=1.0">
-  <title>Maison Analyst — AI Outfit Intelligence</title>
+  <title>Maison Analyst</title>
   <link rel="preconnect" href="https://fonts.googleapis.com">
   <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
   <link href="https://fonts.googleapis.com/css2?family=Cormorant+Garamond:ital,wght@0,300;0,400;0,500;1,300;1,400&family=DM+Mono:wght@300;400&display=swap" rel="stylesheet">
@@ -11,89 +11,151 @@
     *,*::before,*::after{box-sizing:border-box;margin:0;padding:0}
     :root{
       --cream:#FAF8F4;--ink:#1A1916;--ink-muted:#6B6860;--ink-faint:#B0AEA7;
-      --border:rgba(26,25,22,0.1);--border-med:rgba(26,25,22,0.18);--border-strong:rgba(26,25,22,0.28);
-      --white:#ffffff;--purple:#534AB7;--purple-bg:#EEEDFE;--purple-mid:#AFA9EC;
+      --border:rgba(26,25,22,0.1);--border-med:rgba(26,25,22,0.16);--border-strong:rgba(26,25,22,0.26);
+      --white:#fff;--purple:#534AB7;--purple-bg:#EEEDFE;--purple-mid:#AFA9EC;
       --green:#1D6B4A;--green-bg:#E1F5EE;--amber:#8C5A08;--amber-bg:#FEF3DC;
       --red:#9A2B2B;--red-bg:#FCEAEA;
     }
     html{font-size:16px;scroll-behavior:smooth}
     body{background:var(--cream);color:var(--ink);font-family:'Cormorant Garamond',serif;min-height:100vh;display:flex;flex-direction:column;align-items:center}
-    nav{width:100%;padding:1.1rem 2rem;display:flex;align-items:center;justify-content:space-between;border-bottom:0.5px solid var(--border-med);background:var(--cream);position:sticky;top:0;z-index:20}
+
+    /* NAV */
+    nav{width:100%;padding:1rem 2rem;display:flex;align-items:center;justify-content:space-between;border-bottom:0.5px solid var(--border-med);background:var(--cream);position:sticky;top:0;z-index:20}
     .nav-logo{font-size:17px;font-weight:300;font-style:italic;letter-spacing:.18em;text-transform:uppercase}
-    .nav-tag{font-family:'DM Mono',monospace;font-size:10px;letter-spacing:.12em;color:var(--ink-faint)}
-    main{width:100%;max-width:720px;padding:2.5rem 1.5rem 5rem;flex:1}
-    .hero{text-align:center;margin-bottom:2.25rem}
-    .hero h1{font-size:clamp(28px,5vw,46px);font-weight:300;font-style:italic;line-height:1.2;margin-bottom:.6rem}
-    .hero p{font-family:'DM Mono',monospace;font-size:11px;letter-spacing:.09em;color:var(--ink-muted);line-height:1.8}
-    .upload-zone{border:0.5px dashed var(--border-strong);border-radius:14px;padding:3rem 2rem;text-align:center;cursor:pointer;background:var(--white);transition:background .15s,border-color .15s;user-select:none}
+    .nav-tag{font-family:'DM Mono',monospace;font-size:10px;letter-spacing:.1em;color:var(--ink-faint)}
+
+    main{width:100%;max-width:700px;padding:2.5rem 1.25rem 6rem;flex:1}
+
+    /* HERO */
+    .hero{text-align:center;margin-bottom:2rem}
+    .hero h1{font-size:clamp(26px,5vw,44px);font-weight:300;font-style:italic;line-height:1.2;margin-bottom:.5rem}
+    .hero p{font-family:'DM Mono',monospace;font-size:11px;letter-spacing:.08em;color:var(--ink-muted);line-height:1.8}
+
+    /* UPLOAD */
+    .upload-zone{border:0.5px dashed var(--border-strong);border-radius:14px;padding:2.5rem 2rem;text-align:center;cursor:pointer;background:var(--white);transition:background .15s,border-color .15s;user-select:none}
     .upload-zone:hover{background:#FDFCFA;border-color:var(--purple)}
     .upload-zone.drag-over{background:var(--purple-bg);border-color:var(--purple)}
-    .upload-icon{width:42px;height:42px;margin:0 auto 1rem;color:var(--ink-faint);display:block}
-    .upload-zone h2{font-size:20px;font-weight:300;font-style:italic;margin-bottom:.35rem}
+    .upload-icon{width:40px;height:40px;margin:0 auto .875rem;color:var(--ink-faint);display:block}
+    .upload-zone h2{font-size:19px;font-weight:300;font-style:italic;margin-bottom:.3rem}
     .upload-zone p{font-family:'DM Mono',monospace;font-size:10px;letter-spacing:.1em;color:var(--ink-muted)}
     #file-input{display:none}
-    .preview-wrap{display:none;margin-top:1.5rem}
+
+    /* FOCUS INPUT */
+    .focus-section{margin-bottom:1.25rem}
+    .focus-label-row{display:flex;align-items:center;justify-content:space-between;margin-bottom:.5rem}
+    .focus-label{font-family:'DM Mono',monospace;font-size:10px;letter-spacing:.16em;text-transform:uppercase;color:var(--ink-muted)}
+    .focus-optional{font-family:'DM Mono',monospace;font-size:9px;letter-spacing:.12em;text-transform:uppercase;color:var(--ink-faint);background:#F1EFE8;padding:2px 8px;border-radius:20px}
+    .focus-hint{font-family:'DM Mono',monospace;font-size:10px;letter-spacing:.04em;color:var(--ink-faint);margin-top:.5rem;line-height:1.6}
+    .focus-input{width:100%;font-family:'DM Mono',monospace;font-size:11px;letter-spacing:.04em;padding:11px 14px;border:0.5px solid var(--border-strong);border-radius:8px;background:var(--white);color:var(--ink);outline:none;transition:border-color .15s}
+    .focus-input:focus{border-color:var(--purple)}
+    .focus-input::placeholder{color:var(--ink-faint)}
+
+    /* PREVIEW */
+    .preview-wrap{display:none;margin-top:1.25rem}
     .preview-wrap.show{display:block}
-    .image-frame{border:0.5px solid var(--border-med);border-radius:10px;overflow:hidden;background:var(--white);display:flex;align-items:center;justify-content:center;margin-bottom:1rem;max-height:420px}
-    .image-frame img{max-width:100%;max-height:420px;object-fit:contain;display:block}
-    .btn-stack{display:flex;flex-direction:column;gap:8px}
-    .btn-primary{display:block;width:100%;font-family:'DM Mono',monospace;font-size:11px;letter-spacing:.18em;text-transform:uppercase;padding:14px;background:var(--ink);color:var(--cream);border:none;border-radius:8px;cursor:pointer;transition:opacity .15s}
+    .image-frame{border:0.5px solid var(--border-med);border-radius:10px;overflow:hidden;background:var(--white);display:flex;align-items:center;justify-content:center;margin-bottom:.875rem;max-height:400px}
+    .image-frame img{max-width:100%;max-height:400px;object-fit:contain;display:block}
+    .btn-stack{display:flex;flex-direction:column;gap:7px}
+
+    /* BUTTONS */
+    .btn-primary{display:block;width:100%;font-family:'DM Mono',monospace;font-size:11px;letter-spacing:.16em;text-transform:uppercase;padding:13px;background:var(--ink);color:var(--cream);border:none;border-radius:8px;cursor:pointer;transition:opacity .15s}
     .btn-primary:hover{opacity:.82}
     .btn-primary:disabled{opacity:.35;cursor:not-allowed}
-    .btn-ghost{display:block;width:100%;font-family:'DM Mono',monospace;font-size:10px;letter-spacing:.12em;text-transform:uppercase;padding:11px;background:transparent;color:var(--ink-muted);border:0.5px solid var(--border-med);border-radius:8px;cursor:pointer;transition:border-color .15s,color .15s}
+    .btn-ghost{display:block;width:100%;font-family:'DM Mono',monospace;font-size:10px;letter-spacing:.1em;text-transform:uppercase;padding:10px;background:transparent;color:var(--ink-muted);border:0.5px solid var(--border-med);border-radius:8px;cursor:pointer;transition:border-color .15s,color .15s}
     .btn-ghost:hover{border-color:var(--border-strong);color:var(--ink)}
+
+    /* LOADING */
     .loading{display:none;text-align:center;padding:3rem 1rem}
     .loading.show{display:block}
-    .spinner{width:26px;height:26px;border:1px solid var(--border-med);border-top-color:var(--purple);border-radius:50%;animation:spin .85s linear infinite;margin:0 auto 1rem}
+    .spinner{width:24px;height:24px;border:1px solid var(--border-med);border-top-color:var(--purple);border-radius:50%;animation:spin .85s linear infinite;margin:0 auto 1rem}
     @keyframes spin{to{transform:rotate(360deg)}}
-    .loading-title{font-size:18px;font-style:italic;font-weight:300;margin-bottom:.4rem}
-    .loading-sub{font-family:'DM Mono',monospace;font-size:11px;letter-spacing:.07em;color:var(--ink-muted)}
+    .loading-title{font-size:18px;font-style:italic;font-weight:300;margin-bottom:.35rem}
+    .loading-sub{font-family:'DM Mono',monospace;font-size:11px;letter-spacing:.06em;color:var(--ink-muted)}
+
+    /* ERROR */
     .error-bar{display:none}
-    .error-bar.show{display:block;margin-top:1rem;padding:.875rem 1rem;background:var(--red-bg);border:0.5px solid rgba(154,43,43,.2);border-radius:8px;font-family:'DM Mono',monospace;font-size:11px;color:var(--red);letter-spacing:.04em;line-height:1.6}
-    .results{display:none;margin-top:2rem}
-    .results.show{display:block;animation:rise .35s ease both}
-    @keyframes rise{from{opacity:0;transform:translateY(10px)}to{opacity:1;transform:translateY(0)}}
-    .subject-card{background:var(--white);border:0.5px solid var(--border-med);border-radius:12px;padding:1.25rem 1.5rem;margin-bottom:2rem}
-    .subject-label{font-family:'DM Mono',monospace;font-size:9px;letter-spacing:.22em;text-transform:uppercase;color:var(--purple);margin-bottom:8px}
-    .subject-desc{font-size:16px;font-weight:300;line-height:1.7;margin-bottom:.5rem}
-    .subject-vibe{font-family:'DM Mono',monospace;font-size:11px;color:var(--ink-muted);letter-spacing:.05em;line-height:1.6;font-style:italic}
-    .section-heading{font-family:'DM Mono',monospace;font-size:10px;letter-spacing:.2em;text-transform:uppercase;color:var(--ink-faint);margin-bottom:1rem;padding-bottom:.5rem;border-bottom:0.5px solid var(--border)}
-    .item-card{background:var(--white);border:0.5px solid var(--border-med);border-radius:12px;margin-bottom:1.25rem;overflow:hidden}
-    .item-header{display:flex;align-items:center;justify-content:space-between;padding:1rem 1.25rem;border-bottom:0.5px solid var(--border);gap:1rem;cursor:pointer;user-select:none}
-    .item-header:hover{background:#FDFCFA}
-    .item-header-left{display:flex;align-items:center;gap:.875rem;flex:1;min-width:0}
-    .item-position-tag{font-family:'DM Mono',monospace;font-size:9px;letter-spacing:.15em;text-transform:uppercase;background:#F1EFE8;color:var(--ink-muted);padding:3px 9px;border-radius:20px;white-space:nowrap;flex-shrink:0}
-    .item-name{font-size:17px;font-weight:300;font-style:italic;line-height:1.2}
+    .error-bar.show{display:block;margin-top:.875rem;padding:.875rem 1rem;background:var(--red-bg);border:0.5px solid rgba(154,43,43,.2);border-radius:8px;font-family:'DM Mono',monospace;font-size:11px;color:var(--red);line-height:1.6}
+
+    /* RESULTS */
+    .results{display:none;margin-top:1.75rem}
+    .results.show{display:block;animation:rise .3s ease both}
+    @keyframes rise{from{opacity:0;transform:translateY(8px)}to{opacity:1;transform:translateY(0)}}
+
+    /* SUBJECT */
+    .subject-card{background:var(--white);border:0.5px solid var(--border-med);border-radius:12px;padding:1.125rem 1.375rem;margin-bottom:1.5rem}
+    .card-label{font-family:'DM Mono',monospace;font-size:9px;letter-spacing:.22em;text-transform:uppercase;color:var(--purple);margin-bottom:6px}
+    .subject-desc{font-size:15px;font-weight:300;line-height:1.7;margin-bottom:.4rem}
+    .subject-vibe{font-family:'DM Mono',monospace;font-size:11px;color:var(--ink-muted);font-style:italic;line-height:1.6}
+
+    /* TOTAL */
+    .total-bar{background:var(--ink);color:var(--cream);border-radius:12px;padding:1.125rem 1.375rem;display:flex;align-items:center;justify-content:space-between;margin-bottom:1.25rem;flex-wrap:wrap;gap:.5rem}
+    .total-label{font-family:'DM Mono',monospace;font-size:10px;letter-spacing:.14em;text-transform:uppercase;opacity:.55}
+    .total-amount{font-size:26px;font-weight:300;font-style:italic}
+
+    /* SECTION */
+    .section-head{font-family:'DM Mono',monospace;font-size:10px;letter-spacing:.18em;text-transform:uppercase;color:var(--ink-faint);margin-bottom:.875rem;padding-bottom:.5rem;border-bottom:0.5px solid var(--border)}
+
+    /* ITEM CARD */
+    .item-card{background:var(--white);border:0.5px solid var(--border-med);border-radius:12px;margin-bottom:1rem;overflow:hidden}
+
+    .item-header{display:flex;align-items:center;gap:.875rem;padding:.875rem 1.125rem;border-bottom:0.5px solid var(--border)}
+    .item-pos-tag{font-family:'DM Mono',monospace;font-size:9px;letter-spacing:.14em;text-transform:uppercase;background:#F1EFE8;color:var(--ink-muted);padding:3px 9px;border-radius:20px;white-space:nowrap;flex-shrink:0}
+    .item-title-col{flex:1;min-width:0}
+    .item-name{font-size:16px;font-weight:300;font-style:italic;line-height:1.2}
     .item-color{font-family:'DM Mono',monospace;font-size:10px;color:var(--ink-muted);margin-top:2px}
-    .item-header-right{display:flex;flex-direction:column;align-items:flex-end;gap:4px;flex-shrink:0}
-    .brand-name{font-size:15px;font-weight:400;text-align:right}
-    .price-tag{font-family:'DM Mono',monospace;font-size:13px;color:var(--purple);font-weight:400}
-    .conf-dot{display:inline-block;width:7px;height:7px;border-radius:50%;flex-shrink:0}
-    .conf-confirmed{background:var(--green)}
-    .conf-likely{background:#E89B1A}
-    .conf-uncertain{background:var(--ink-faint)}
-    .item-body{padding:1.25rem;display:none}
-    .item-body.open{display:block}
-    .detail-grid{display:grid;grid-template-columns:1fr 1fr;gap:.75rem;margin-bottom:1rem}
-    @media(max-width:440px){.detail-grid{grid-template-columns:1fr}}
-    .detail-cell-label{font-family:'DM Mono',monospace;font-size:9px;letter-spacing:.2em;text-transform:uppercase;color:var(--ink-faint);margin-bottom:3px}
-    .detail-cell-value{font-size:14px;font-weight:300;line-height:1.5}
-    .clue-block{background:#F8F7F3;border-radius:8px;padding:.875rem 1rem;margin-bottom:.75rem}
-    .clue-block-label{font-family:'DM Mono',monospace;font-size:9px;letter-spacing:.2em;text-transform:uppercase;color:var(--purple);margin-bottom:5px}
-    .clue-block-text{font-size:14px;font-weight:300;line-height:1.65}
-    .where-to-buy{font-family:'DM Mono',monospace;font-size:11px;color:var(--ink-muted);letter-spacing:.05em}
-    .conf-badge{display:inline-flex;align-items:center;gap:5px;font-family:'DM Mono',monospace;font-size:9px;letter-spacing:.12em;padding:4px 10px;border-radius:20px}
+
+    .item-body{padding:.875rem 1.125rem}
+
+    /* PRICE ROW */
+    .price-row{display:flex;align-items:flex-start;justify-content:space-between;gap:1rem;margin-bottom:1rem;flex-wrap:wrap}
+    .price-main{display:flex;flex-direction:column;gap:2px}
+    .price-amount{font-size:26px;font-weight:300;font-style:italic;color:var(--ink);line-height:1}
+    .price-source{font-family:'DM Mono',monospace;font-size:10px;color:var(--green);letter-spacing:.06em}
+    .price-context{font-family:'DM Mono',monospace;font-size:10px;color:var(--ink-faint);letter-spacing:.05em}
+
+    .brand-col{text-align:right;flex-shrink:0}
+    .brand-verified{font-size:15px;font-weight:400;margin-bottom:3px}
+    .conf-badge{display:inline-flex;align-items:center;gap:5px;font-family:'DM Mono',monospace;font-size:9px;letter-spacing:.1em;padding:3px 9px;border-radius:20px}
     .conf-badge.confirmed{background:var(--green-bg);color:var(--green)}
     .conf-badge.likely{background:var(--amber-bg);color:var(--amber)}
     .conf-badge.uncertain{background:#F1EFE8;color:var(--ink-muted)}
-    .chevron{transition:transform .2s;font-size:12px;color:var(--ink-faint);flex-shrink:0}
-    .chevron.open{transform:rotate(180deg)}
-    .total-bar{background:var(--ink);color:var(--cream);border-radius:12px;padding:1.25rem 1.5rem;display:flex;align-items:center;justify-content:space-between;margin-bottom:1.5rem;flex-wrap:wrap;gap:.5rem}
-    .total-label{font-family:'DM Mono',monospace;font-size:10px;letter-spacing:.15em;text-transform:uppercase;opacity:.6}
-    .total-amount{font-size:28px;font-weight:300;font-style:italic}
-    .disclaimer{font-family:'DM Mono',monospace;font-size:10px;text-align:center;color:var(--ink-faint);letter-spacing:.05em;line-height:1.8;margin-bottom:1.5rem}
+    .conf-dot{width:6px;height:6px;border-radius:50%;display:inline-block;flex-shrink:0}
+    .dot-confirmed{background:var(--green)}
+    .dot-likely{background:#E89B1A}
+    .dot-uncertain{background:var(--ink-faint)}
+
+    /* DETAIL PILLS */
+    .detail-row{display:flex;flex-wrap:wrap;gap:.5rem;margin-top:.75rem}
+    .detail-pill{background:#F8F7F3;border-radius:8px;padding:.5rem .875rem}
+    .detail-pill-label{font-family:'DM Mono',monospace;font-size:9px;letter-spacing:.18em;text-transform:uppercase;color:var(--ink-faint);margin-bottom:2px}
+    .detail-pill-value{font-size:13px;font-weight:300;line-height:1.4}
+
+    /* CLUES — collapsible */
+    .clues-toggle{font-family:'DM Mono',monospace;font-size:10px;letter-spacing:.08em;color:var(--ink-faint);cursor:pointer;background:none;border:none;padding:0;margin-top:.75rem;display:flex;align-items:center;gap:4px}
+    .clues-toggle:hover{color:var(--ink)}
+    .clues-body{display:none;margin-top:.625rem;font-size:13px;font-weight:300;line-height:1.65;color:var(--ink-muted);border-left:2px solid var(--purple-mid);padding-left:.75rem}
+    .clues-body.open{display:block}
+
+    /* CHAT */
+    .chat-wrap{margin-top:2rem}
+    .chat-head{font-family:'DM Mono',monospace;font-size:10px;letter-spacing:.18em;text-transform:uppercase;color:var(--ink-faint);margin-bottom:.875rem;padding-bottom:.5rem;border-bottom:0.5px solid var(--border)}
+    .chat-messages{display:flex;flex-direction:column;gap:.75rem;margin-bottom:1rem;max-height:380px;overflow-y:auto;padding-right:4px}
+    .chat-msg{padding:.75rem 1rem;border-radius:10px;font-size:15px;font-weight:300;line-height:1.65;max-width:90%}
+    .chat-msg.user{background:var(--ink);color:var(--cream);align-self:flex-end;border-bottom-right-radius:3px}
+    .chat-msg.assistant{background:var(--white);border:0.5px solid var(--border-med);align-self:flex-start;border-bottom-left-radius:3px}
+    .chat-msg.thinking{background:var(--white);border:0.5px solid var(--border-med);align-self:flex-start;color:var(--ink-faint);font-family:'DM Mono',monospace;font-size:11px;font-style:italic}
+    .chat-input-row{display:flex;gap:.5rem}
+    .chat-input{flex:1;font-family:'DM Mono',monospace;font-size:11px;letter-spacing:.04em;padding:11px 14px;border:0.5px solid var(--border-strong);border-radius:8px;background:var(--white);color:var(--ink);outline:none;transition:border-color .15s;resize:none}
+    .chat-input:focus{border-color:var(--purple)}
+    .chat-input::placeholder{color:var(--ink-faint)}
+    .chat-send{font-family:'DM Mono',monospace;font-size:11px;letter-spacing:.12em;text-transform:uppercase;padding:11px 18px;background:var(--ink);color:var(--cream);border:none;border-radius:8px;cursor:pointer;white-space:nowrap;transition:opacity .15s;flex-shrink:0}
+    .chat-send:hover{opacity:.82}
+    .chat-send:disabled{opacity:.35;cursor:not-allowed}
+
+    .disclaimer{font-family:'DM Mono',monospace;font-size:10px;text-align:center;color:var(--ink-faint);line-height:1.8;margin-top:2rem}
     .divider{border:none;border-top:0.5px solid var(--border);margin:1.5rem 0}
-    footer{width:100%;border-top:0.5px solid var(--border-med);padding:1.25rem 2rem;text-align:center;font-family:'DM Mono',monospace;font-size:10px;letter-spacing:.1em;color:var(--ink-faint)}
+
+    footer{width:100%;border-top:0.5px solid var(--border-med);padding:1rem 2rem;text-align:center;font-family:'DM Mono',monospace;font-size:10px;letter-spacing:.1em;color:var(--ink-faint)}
   </style>
 </head>
 <body>
@@ -104,20 +166,32 @@
 <main>
   <div class="hero">
     <h1>Decode every piece<br>of the outfit.</h1>
-    <p>Upload a photo — AI identifies every item, researches the brand,<br>and finds the real retail price.</p>
+    <p>Upload a photo — AI identifies every item, finds the exact model,<br>and locates the cheapest price from real sellers.</p>
   </div>
 
+  <!-- FOCUS FIELD -->
+  <div class="focus-section">
+    <div class="focus-label-row">
+      <span class="focus-label">Specific item to analyse</span>
+      <span class="focus-optional">optional</span>
+    </div>
+    <input class="focus-input" id="focus-input" type="text" placeholder="e.g. the shoes / the jacket / the bag on the left">
+    <p class="focus-hint">Leave blank to analyse the full outfit &mdash; or name a piece to go deep on just that.</p>
+  </div>
+
+  <!-- UPLOAD -->
   <div class="upload-zone" id="drop-zone">
-    <svg class="upload-icon" viewBox="0 0 44 44" fill="none" xmlns="http://www.w3.org/2000/svg">
+    <svg class="upload-icon" viewBox="0 0 44 44" fill="none">
       <path d="M22 5v26" stroke="currentColor" stroke-width="1.1" stroke-linecap="round"/>
       <path d="M13 14l9-9 9 9" stroke="currentColor" stroke-width="1.1" stroke-linecap="round" stroke-linejoin="round"/>
       <path d="M8 33v5a1 1 0 001 1h26a1 1 0 001-1v-5" stroke="currentColor" stroke-width="1.1" stroke-linecap="round"/>
     </svg>
     <h2>Drop a photo here</h2>
-    <p>full outfit &nbsp;·&nbsp; street style &nbsp;·&nbsp; flat lay &nbsp;·&nbsp; JPG · PNG · WEBP</p>
+    <p>full outfit &nbsp;&middot;&nbsp; street style &nbsp;&middot;&nbsp; flat lay &nbsp;&middot;&nbsp; JPG &middot; PNG &middot; WEBP</p>
     <input type="file" id="file-input" accept="image/jpeg,image/png,image/webp,image/gif">
   </div>
 
+  <!-- PREVIEW -->
   <div class="preview-wrap" id="preview-wrap">
     <div class="image-frame"><img id="img-preview" src="" alt="Preview"></div>
     <div class="btn-stack">
@@ -131,21 +205,27 @@
   <div class="loading" id="loading">
     <div class="spinner"></div>
     <p class="loading-title">Reading the outfit&hellip;</p>
-    <p class="loading-sub">Identifying items &middot; Researching brands &middot; Finding prices</p>
+    <p class="loading-sub">Identifying items &middot; Finding exact models &middot; Hunting cheapest prices</p>
   </div>
 
   <div class="results" id="results"></div>
 </main>
-<footer>Powered by Claude AI &nbsp;&middot;&nbsp; Prices &amp; brand IDs are indicative &mdash; verify before purchase</footer>
+
+<footer>Powered by Claude AI &nbsp;&middot;&nbsp; Prices are indicative &mdash; verify before purchasing</footer>
 
 <script>
 (function(){
-  var dz=document.getElementById('drop-zone'),fi=document.getElementById('file-input'),
-      pw=document.getElementById('preview-wrap'),ip=document.getElementById('img-preview'),
-      ab=document.getElementById('analyse-btn'),rb=document.getElementById('reset-btn'),
-      ld=document.getElementById('loading'),rs=document.getElementById('results'),
+  var dz=document.getElementById('drop-zone'),
+      fi=document.getElementById('file-input'),
+      focusInput=document.getElementById('focus-input'),
+      pw=document.getElementById('preview-wrap'),
+      ip=document.getElementById('img-preview'),
+      ab=document.getElementById('analyse-btn'),
+      rb=document.getElementById('reset-btn'),
+      ld=document.getElementById('loading'),
+      rs=document.getElementById('results'),
       eb=document.getElementById('error-bar');
-  var b64=null,mime=null;
+  var b64=null,mime=null,outfitContext='';
 
   dz.addEventListener('click',function(){fi.click()});
   dz.addEventListener('dragover',function(e){e.preventDefault();dz.classList.add('drag-over')});
@@ -164,44 +244,37 @@
       b64=e.target.result.split(',')[1];
       ip.src=e.target.result;
       dz.style.display='none';
-      s(pw);h(rs);h(eb);rs.innerHTML='';
+      s(pw);h(rs);h(eb);rs.innerHTML='';outfitContext='';
     };
     reader.readAsDataURL(file);
   }
 
   rb.addEventListener('click',function(){
-    b64=null;fi.value='';
-    h(pw);h(rs);h(eb);rs.innerHTML='';
+    b64=null;fi.value='';focusInput.value='';
+    h(pw);h(rs);h(eb);rs.innerHTML='';outfitContext='';
     dz.style.display='';
   });
 
   ab.addEventListener('click',function(){
     if(!b64)return;
-    ab.disabled=true;
-    h(pw);s(ld);h(eb);h(rs);rs.innerHTML='';
+    ab.disabled=true;h(pw);s(ld);h(eb);h(rs);rs.innerHTML='';
     fetch('/api/analyse',{
       method:'POST',
       headers:{'Content-Type':'application/json'},
-      body:JSON.stringify({base64:b64,mimeType:mime})
+      body:JSON.stringify({base64:b64,mimeType:mime,focusItem:focusInput.value.trim()||null})
     })
     .then(function(r){return r.json().then(function(d){return{ok:r.ok,d:d}})})
     .then(function(r){
       if(!r.ok)throw new Error(r.d.error||'Analysis failed');
       render(r.d);
     })
-    .catch(function(err){
-      eb.textContent=err.message||'Analysis failed.';
-      s(eb);s(pw);
-    })
+    .catch(function(err){eb.textContent=err.message||'Analysis failed.';s(eb);s(pw);})
     .finally(function(){h(ld);ab.disabled=false});
   });
 
   function s(el){el.classList.add('show')}
   function h(el){el.classList.remove('show')}
-
-  function esc(v){
-    return String(v||'—').replace(/&/g,'&amp;').replace(/</g,'&lt;').replace(/>/g,'&gt;').replace(/"/g,'&quot;');
-  }
+  function esc(v){return String(v||'—').replace(/&/g,'&amp;').replace(/</g,'&lt;').replace(/>/g,'&gt;').replace(/"/g,'&quot;')}
 
   function cClass(c){
     if(!c)return 'uncertain';
@@ -210,125 +283,198 @@
     if(l==='likely')return 'likely';
     return 'uncertain';
   }
-  function dClass(c){
+  function dotClass(c){
     var cl=cClass(c);
-    if(cl==='confirmed')return 'conf-confirmed';
-    if(cl==='likely')return 'conf-likely';
-    return 'conf-uncertain';
-  }
-
-  function getPrice(r){
-    if(r.retail_price&&r.retail_price!=='N/A'&&!r.retail_price.toLowerCase().includes('unable'))return r.retail_price;
-    return null;
+    if(cl==='confirmed')return 'dot-confirmed';
+    if(cl==='likely')return 'dot-likely';
+    return 'dot-uncertain';
   }
 
   function sumPrices(items){
     var total=0,any=false;
     items.forEach(function(item){
       var r=item.research||{};
-      var p=r.retail_price||'';
+      var p=r.cheapest_price||r.retail_price||'';
       var nums=p.match(/[\d,]+/g);
-      if(nums&&nums.length){
-        var v=parseInt(nums[0].replace(/,/g,''),10);
-        if(!isNaN(v)){total+=v;any=true;}
-      }
+      if(nums){var v=parseInt(nums[0].replace(/,/g,''),10);if(!isNaN(v)){total+=v;any=true;}}
     });
     return any?'$'+total.toLocaleString()+'+':null;
   }
 
-  function cell(label,val){
-    return '<div><div class="detail-cell-label">'+esc(label)+'</div><div class="detail-cell-value">'+esc(val)+'</div></div>';
+  function buildContext(data){
+    var lines=['OUTFIT ANALYSIS:'];
+    if(data.subject)lines.push('Subject: '+data.subject.description+' | Style: '+data.subject.style_summary);
+    (data.items||[]).forEach(function(item){
+      var r=item.research||{};
+      lines.push([
+        item.position.toUpperCase()+': '+item.item_type,
+        'Brand: '+(r.brand_verified||item.brand_guess),
+        'Style: '+(r.style_name||item.style_name_guess||'unknown'),
+        'Code: '+(r.style_code||'—'),
+        'Cheapest: '+(r.cheapest_price||'—')+' at '+(r.cheapest_source||'—'),
+        'Retail: '+(r.retail_price||'—'),
+        'Color: '+(r.colorway_official||item.color),
+        'Material: '+(r.fabric_confirmed||item.material_guess)
+      ].join(' | '));
+    });
+    return lines.join('\n');
+  }
+
+  function pill(label,val){
+    if(!val||val==='—'||val==='N/A')return '';
+    return '<div class="detail-pill"><div class="detail-pill-label">'+esc(label)+'</div><div class="detail-pill-value">'+esc(val)+'</div></div>';
   }
 
   function render(data){
     var subject=data.subject||{};
     var items=data.items||[];
     var total=sumPrices(items);
+    outfitContext=buildContext(data);
     var html='';
 
-    html+='<div class="subject-card">';
-    html+='<div class="subject-label">Subject Analysis</div>';
+    // Subject
+    html+='<div class="subject-card"><div class="card-label">Subject</div>';
     html+='<div class="subject-desc">'+esc(subject.description)+'</div>';
     if(subject.style_summary)html+='<div class="subject-vibe">'+esc(subject.style_summary)+'</div>';
     html+='</div>';
 
-    if(total){
-      html+='<div class="total-bar"><div><div class="total-label">Estimated Outfit Value</div></div><div class="total-amount">'+esc(total)+'</div></div>';
-    }
+    // Total
+    if(total)html+='<div class="total-bar"><div class="total-label">Est. Outfit Value</div><div class="total-amount">'+esc(total)+'</div></div>';
 
-    html+='<div class="section-heading">Outfit Breakdown &mdash; '+items.length+' item'+(items.length!==1?'s':'')+' identified</div>';
+    // Items
+    html+='<div class="section-head">'+items.length+' Item'+(items.length!==1?'s':'')+' Identified</div>';
 
     items.forEach(function(item,idx){
       var r=item.research||{};
       var brand=r.brand_verified||item.brand_guess||'Unknown';
-      var price=getPrice(r)||'—';
       var conf=r.brand_verification_confidence||'Uncertain';
-      var dc=dClass(conf);
       var cc=cClass(conf);
+      var dc=dotClass(conf);
+      var cheapest=r.cheapest_price&&r.cheapest_price!=='Unable to retrieve'?r.cheapest_price:null;
+      var source=r.cheapest_source&&r.cheapest_source!=='—'?r.cheapest_source:null;
+      var cluesId='cl-'+idx;
 
       html+='<div class="item-card">';
-      html+='<div class="item-header" onclick="MA.toggle('+idx+')">';
-      html+='<div class="item-header-left">';
-      html+='<span class="item-position-tag">'+esc(item.position)+'</span>';
-      html+='<div><div class="item-name">'+esc(item.item_type)+'</div>';
-      html+='<div class="item-color">'+esc(item.color)+'</div></div>';
-      html+='</div>';
-      html+='<div class="item-header-right">';
-      html+='<div style="display:flex;align-items:center;gap:6px;">';
-      html+='<span class="conf-dot '+dc+'"></span>';
-      html+='<span class="brand-name">'+esc(brand)+'</span>';
-      html+='</div>';
-      if(price!=='—')html+='<span class="price-tag">'+esc(price)+'</span>';
-      html+='</div>';
-      html+='<span class="chevron" id="chev-'+idx+'">&#9660;</span>';
+
+      // Header
+      html+='<div class="item-header">';
+      html+='<span class="item-pos-tag">'+esc(item.position)+'</span>';
+      html+='<div class="item-title-col"><div class="item-name">'+esc(item.item_type)+'</div>';
+      html+='<div class="item-color">'+esc(r.colorway_official||item.color)+'</div></div>';
       html+='</div>';
 
-      html+='<div class="item-body" id="ib-'+idx+'">';
-      html+='<div style="display:flex;align-items:center;gap:10px;margin-bottom:1rem;flex-wrap:wrap;">';
+      // Body
+      html+='<div class="item-body">';
+
+      // Price row
+      html+='<div class="price-row">';
+      html+='<div class="price-main">';
+      if(cheapest){
+        html+='<div class="price-amount">'+esc(cheapest)+'</div>';
+        if(source)html+='<div class="price-source">Cheapest &mdash; '+esc(source)+'</div>';
+        if(r.price_context)html+='<div class="price-context">'+esc(r.price_context)+'</div>';
+      } else {
+        html+='<div class="price-amount" style="font-size:18px;color:var(--ink-faint);">Price unavailable</div>';
+      }
+      html+='</div>';
+
+      html+='<div class="brand-col">';
+      html+='<div class="brand-verified">'+esc(brand)+'</div>';
       html+='<span class="conf-badge '+cc+'"><span class="conf-dot '+dc+'"></span>'+esc(conf)+'</span>';
-      if(r.style_name&&r.style_name!=='Unknown')html+='<span style="font-family:\'DM Mono\',monospace;font-size:11px;color:var(--ink-muted);">'+esc(r.style_name)+'</span>';
+      html+='</div></div>';
+
+      // Detail pills
+      html+='<div class="detail-row">';
+      html+=pill('Official Name',r.style_name);
+      html+=pill('Style Code',r.style_code);
+      html+=pill('Retail Price',r.retail_price);
+      html+=pill('Material',r.fabric_confirmed||item.material_guess);
       html+='</div>';
-      html+='<div class="detail-grid">';
-      html+=cell('Material',r.fabric_confirmed||item.material_guess);
-      html+=cell('Retail Price',r.retail_price);
-      html+=cell('Resale / Secondary',r.resale_price);
-      html+=cell('Additional Details',r.additional_details);
-      html+='</div>';
-      if(item.brand_clues){
-        html+='<div class="clue-block"><div class="clue-block-label">Visual Brand Clues</div>';
-        html+='<div class="clue-block-text">'+esc(item.brand_clues)+'</div></div>';
+
+      // Clues toggle
+      if(item.brand_clues&&item.brand_clues!=='—'){
+        html+='<button class="clues-toggle" onclick="MA.toggleClues(\''+cluesId+'\',this)">&#9656; Visual ID clues</button>';
+        html+='<div class="clues-body" id="'+cluesId+'">'+esc(item.brand_clues)+'</div>';
       }
-      if(r.brand_verification_notes){
-        html+='<div class="clue-block"><div class="clue-block-label">Research Findings</div>';
-        html+='<div class="clue-block-text">'+esc(r.brand_verification_notes)+'</div></div>';
-      }
-      if(r.where_to_buy&&r.where_to_buy!=='N/A'){
-        html+='<div style="margin-top:.5rem"><div class="detail-cell-label" style="margin-bottom:4px;">Where to Buy</div>';
-        html+='<div class="where-to-buy">'+esc(r.where_to_buy)+'</div></div>';
-      }
+
       html+='</div></div>';
     });
 
-    html+='<p class="disclaimer">Prices &amp; brand IDs are AI-estimated, backed by live web research.<br>Always verify with the retailer before purchasing.</p>';
+    // Chat
     html+='<hr class="divider">';
-    html+='<div style="text-align:center;"><button class="btn-ghost" onclick="MA.reset()" style="width:auto;padding:10px 28px;">Analyse another outfit</button></div>';
+    html+='<div class="chat-wrap">';
+    html+='<div class="chat-head">Ask about the outfit</div>';
+    html+='<div class="chat-messages" id="chat-msgs"></div>';
+    html+='<div class="chat-input-row">';
+    html+='<textarea class="chat-input" id="chat-input" rows="2" placeholder="e.g. Where can I find those shoes cheaper? What are similar alternatives to the jacket?"></textarea>';
+    html+='<button class="chat-send" id="chat-send" onclick="MA.sendChat()">Send</button>';
+    html+='</div></div>';
+
+    html+='<p class="disclaimer">Prices are AI-researched estimates &mdash; always verify with the seller before purchasing.</p>';
+    html+='<hr class="divider">';
+    html+='<div style="text-align:center"><button class="btn-ghost" onclick="MA.reset()" style="width:auto;padding:10px 28px;">Analyse another outfit</button></div>';
 
     rs.innerHTML=html;
     s(rs);
+
+    // Enter key for chat
+    document.getElementById('chat-input').addEventListener('keydown',function(e){
+      if(e.key==='Enter'&&!e.shiftKey){e.preventDefault();MA.sendChat();}
+    });
   }
 
   window.MA={
-    toggle:function(idx){
-      var b=document.getElementById('ib-'+idx);
-      var c=document.getElementById('chev-'+idx);
-      if(b.classList.contains('open')){b.classList.remove('open');c.classList.remove('open');}
-      else{b.classList.add('open');c.classList.add('open');}
+    toggleClues:function(id,btn){
+      var el=document.getElementById(id);
+      if(el.classList.contains('open')){el.classList.remove('open');btn.innerHTML='&#9656; Visual ID clues';}
+      else{el.classList.add('open');btn.innerHTML='&#9662; Visual ID clues';}
     },
     reset:function(){
-      b64=null;fi.value='';
-      h(rs);rs.innerHTML='';
+      b64=null;fi.value='';focusInput.value='';
+      h(rs);rs.innerHTML='';outfitContext='';
       dz.style.display='';
       window.scrollTo({top:0,behavior:'smooth'});
+    },
+    sendChat:function(){
+      var input=document.getElementById('chat-input');
+      var sendBtn=document.getElementById('chat-send');
+      var msgs=document.getElementById('chat-msgs');
+      var msg=(input.value||'').trim();
+      if(!msg)return;
+
+      // User bubble
+      var ub=document.createElement('div');
+      ub.className='chat-msg user';
+      ub.textContent=msg;
+      msgs.appendChild(ub);
+      input.value='';
+      sendBtn.disabled=true;
+
+      // Thinking bubble
+      var tb=document.createElement('div');
+      tb.className='chat-msg thinking';
+      tb.textContent='Searching…';
+      msgs.appendChild(tb);
+      msgs.scrollTop=msgs.scrollHeight;
+
+      fetch('/api/chat',{
+        method:'POST',
+        headers:{'Content-Type':'application/json'},
+        body:JSON.stringify({message:msg,context:outfitContext})
+      })
+      .then(function(r){return r.json()})
+      .then(function(d){
+        tb.className='chat-msg assistant';
+        tb.textContent=d.reply||d.error||'No response.';
+      })
+      .catch(function(err){
+        tb.className='chat-msg assistant';
+        tb.textContent='Error: '+err.message;
+      })
+      .finally(function(){
+        sendBtn.disabled=false;
+        msgs.scrollTop=msgs.scrollHeight;
+      });
     }
   };
 })();
